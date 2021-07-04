@@ -50,7 +50,7 @@ class App:
 		1. delete message
 		2. delete replied message
 		3. send message (mentioned the user)
-	@ sent by user:
+	* sent by user:
 		1. delete message
 		2. reply the replied message
 		3. send message (no mention)
@@ -90,6 +90,38 @@ class App:
 						message.chat.id,
 						message.message_id
 					)
+		def mode2(self, message, name):
+			"""\
+* private:
+	1. reply message
+	2. send message
+* group:
+	* sent by admin:
+		1. reply message
+		2. send message
+	* sent by user:
+		1. delete sent message
+"""
+			self.log_message(message)
+			if message.chat.type == "private":
+				self.bot.reply_to(
+					message, 
+					texts["private"]["command"][name]
+				)
+			elif message.chat.type in ("group", "supergroup"):
+				if self.bot.get_chat_member(
+					message.chat.id,
+					message.from_user.id
+				).status in ("administrator", "creator"):
+					self.bot.reply_to(
+						message,
+						texts["group"]["command"][name]
+					)
+				else:
+					self.bot.delete_message(
+						message.chat.id,
+						message.message_id
+					)
 	
 	def init(self):
 		with Progress() as progress:
@@ -98,51 +130,13 @@ class App:
 				commands = ['start']
 			)
 			def start(message):
-				self.log_message(message)
-				if message.chat.type == "private":
-					self.bot.reply_to(
-						message, 
-						texts["private"]["command"]["start"]
-					)
-				elif message.chat.type in ("group", "supergroup"):
-					if self.bot.get_chat_member(
-						message.chat.id,
-						message.from_user.id
-					).status in ("administrator", "creator"):
-						self.bot.reply_to(
-							message, 
-							texts["group"]["command"]["start"]
-						)
-					else:
-						self.bot.delete_message(
-							message.chat.id, 
-							message.message_id
-						)
+				self.handle.mode2(self, message, "start")
 			progress.update(task, advance = 1)
 			@self.bot.message_handler(
 				commands = ['about']
 			)
 			def about(message):
-				self.log_message(message)
-				if message.chat.type == "private":
-					self.bot.reply_to(
-						message, 
-						texts["private"]["command"]["about"]
-					)
-				elif message.chat.type in ("group", "supergroup"):
-					if self.bot.get_chat_member(
-						message.chat.id,
-						message.from_user.id
-					).status in ("administrator", "creator"):
-						self.bot.reply_to(
-							message,
-							texts["group"]["command"]["about"]
-						)
-					else:
-						self.bot.delete_message(
-							message.chat.id,
-							message.message_id
-						)
+				self.handle.mode2(self, message, "about")
 			progress.update(task, advance = 1)
 			
 			@self.bot.message_handler(
