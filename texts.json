@@ -7,13 +7,15 @@
 			"project": "<private/command/project>",
 			"irrelevant": "<private/command/irrelevant>",
 			"telegram_bot": "<private/command/telegram_bot>",
-			"learning": "<private/command/learning>"
+			"learning": "<private/command/learning>",
+			"help": "<private/command/help>"
 		}
 	},
 	"group": {
 		"command":{
 			"start": "<group/command/start>",
 			"about": "<group/command/about>",
+			"help": "<group/command/help>",
 			"learning": {
 				"admin": "<group/command/learning/admin>",
 				"user": "<group/command/learning/user>"

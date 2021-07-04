@@ -77,7 +77,7 @@ class App:
 					self.bot.send_message(
 						message.chat.id,
 						texts["group"]["command"][name]["admin"].format(
-							user = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name)+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"
+							user = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"
 						),
 						parse_mode = "MarkDown"
 					)
@@ -131,6 +131,12 @@ class App:
 			)
 			def start(message):
 				self.handle.mode2(self, message, "start")
+			progress.update(task, advance = 1)
+			@self.bot.message_handler(
+				commands = ['about']
+			)
+			def help(message):
+				self.handle.mode2(self, message, "help")
 			progress.update(task, advance = 1)
 			@self.bot.message_handler(
 				commands = ['about']
