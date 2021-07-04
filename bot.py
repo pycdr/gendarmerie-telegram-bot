@@ -133,13 +133,13 @@ class App:
 				self.handle.mode2(self, message, "start")
 			progress.update(task, advance = 1)
 			@self.bot.message_handler(
-				commands = ['about']
+				commands = ['help']
 			)
 			def help(message):
 				self.handle.mode2(self, message, "help")
 			progress.update(task, advance = 1)
 			@self.bot.message_handler(
-				commands = ['help']
+				commands = ['about']
 			)
 			def about(message):
 				self.handle.mode2(self, message, "about")
