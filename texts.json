@@ -6,7 +6,8 @@
 			"ask": "<private/command/ask>",
 			"project": "<private/command/project>",
 			"irrelevant": "<private/command/irrelevant>",
-			"telegram_bot": "<private/command/telegram_bot>"
+			"telegram_bot": "<private/command/telegram_bot>",
+			"learning": "<private/command/learning>"
 		}
 	},
 	"group": {
