@@ -83,7 +83,7 @@ class App:
 							parse_mode = "MarkDown"
 						)
 				else:
-					if self.reply_to_message:
+					if message.reply_to_message:
 						self.bot.reply_to(
 							message.reply_to_message,
 							texts["group"]["command"][name]["user"]
