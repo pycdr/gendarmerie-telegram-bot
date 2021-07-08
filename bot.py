@@ -93,7 +93,8 @@ class App:
 					if message.reply_to_message:
 						self.bot.reply_to(
 							message.reply_to_message,
-							texts["group"]["command"][name]["user"]
+							texts["group"]["command"][name]["user"],
+							parse_mode = "MarkDown"
 						)
 					self.bot.delete_message(
 						message.chat.id,
