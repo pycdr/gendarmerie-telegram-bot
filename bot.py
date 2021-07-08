@@ -58,7 +58,7 @@ class App:
 			self.log_message(message)
 			if message.chat.type == "private":
 				self.bot.reply_to(
-						message,
+					message,
 					texts["private"]["command"][name]
 				)
 			elif message.chat.type in ("group", "supergroup"):
@@ -70,22 +70,24 @@ class App:
 						message.chat.id, 
 						message.message_id
 					)
-					self.bot.delete_message(
-						message.reply_to_message.chat.id,
-						message.reply_to_message.message_id
-					)
-					self.bot.send_message(
-						message.chat.id,
-						texts["group"]["command"][name]["admin"].format(
-							user = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"
-						),
-						parse_mode = "MarkDown"
-					)
+					if message.reply_to_message.chat:
+						self.bot.delete_message(
+							message.reply_to_message.chat.id,
+							message.reply_to_message.message_id
+						)
+						self.bot.send_message(
+							message.chat.id,
+							texts["group"]["command"][name]["admin"].format(
+								user = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"
+							),
+							parse_mode = "MarkDown"
+						)
 				else:
-					self.bot.reply_to(
-						message.reply_to_message,
-						texts["group"]["command"][name]["user"]
-					)
+					if self.reply_to_message:
+						self.bot.reply_to(
+							message.reply_to_message,
+							texts["group"]["command"][name]["user"]
+						)
 					self.bot.delete_message(
 						message.chat.id,
 						message.message_id
@@ -163,10 +165,11 @@ class App:
 						texts["private"]["command"]["ask"]
 					)
 				elif message.chat.type in ("group", "supergroup"):
-					self.bot.reply_to(
-						message.reply_to_message,
-						texts["group"]["command"]["ask"]
-					)
+					if message.reply_to_message:
+						self.bot.reply_to(
+							message.reply_to_message,
+							texts["group"]["command"]["ask"]
+						)
 					self.bot.delete_message(
 						message.chat.id,
 						message.message_id
