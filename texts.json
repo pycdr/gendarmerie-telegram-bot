@@ -3,12 +3,13 @@
 		"command":{
 			"start": "<private/command/start>",
 			"about": "<private/command/about>",
+			"help": "<private/command/help>",
+			"paste": "<private/command/paste>",
 			"ask": "<private/command/ask>",
 			"project": "<private/command/project>",
 			"irrelevant": "<private/command/irrelevant>",
-			"telegram_bot": "<private/command/telegram_bot>",
 			"learning": "<private/command/learning>",
-			"help": "<private/command/help>"
+			"telegram_bot": "<private/command/telegram_bot>"
 		}
 	},
 	"group": {
@@ -16,10 +17,7 @@
 			"start": "<group/command/start>",
 			"about": "<group/command/about>",
 			"help": "<group/command/help>",
-			"learning": {
-				"admin": "<group/command/learning/admin>",
-				"user": "<group/command/learning/user>"
-			},
+			"paste": "<group/command/paste>",
 			"ask": "<group/command/ask>",
 			"project": {
 				"admin": "<group/command/project/admin>",
@@ -28,6 +26,10 @@
 			"irrelevant": {
 				"admin": "<group/command/irrelevant/admin>",
 				"user": "<group/command/irrelevant/user>"
+			},
+			"learning": {
+				"admin": "<group/command/learning/admin>",
+				"user": "<group/command/learning/user>"
 			},
 			"telegram_bot": {
 				"admin": "<group/command/telegram_bot/admin>",

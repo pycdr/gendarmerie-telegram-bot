@@ -10,12 +10,12 @@ arguments:
 $ ./main.py 'token' -a/--admin @id1 @id2 ...
 """
 	from os.path import exists
-	if exists('./config.json'):
+	if exists('./config.json'): # if config.json exists
 		from json import load
 		data: dict = load(open("./config.json", 'r'))
 		token: str = data['token']
 		admins: list = data['users']['admins']
-	else:
+	else: # get from the program arguments (via argparse)
 		from argparse import ArgumentParser
 		parser = ArgumentParser(
 			prog = "PyBot",
@@ -38,6 +38,7 @@ $ ./main.py 'token' -a/--admin @id1 @id2 ...
 		token: str = args.token
 		admins: list = args.admins
 	
+	# check if a/both json file(s) is/are updated! so data will be updated
 	class Handler(FileSystemEventHandler):
 		def on_modified(self, event):
 			if event.src_path == ".":
@@ -49,12 +50,12 @@ $ ./main.py 'token' -a/--admin @id1 @id2 ...
 				new_texts: dict = load(open("texts.json", 'r'))
 				if bot.texts != new_texts:
 					bot.texts = new_texts
-	
 	handler: Handler = Handler()
 	observer = Observer()
 	observer.schedule(handler,  path='.',  recursive = False)
 	observer.start()
-	app: bot.App = bot.App(token, admins = admins)
+	
+	app: bot.App = bot.App(token, admins = admins) # telegram bot
 	try:
 		app.run()
 	except Exception as err:

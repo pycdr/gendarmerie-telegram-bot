@@ -2,15 +2,21 @@ import telebot
 from rich.console import Console
 from rich.progress import Progress
 from pprint import pprint
-
+from os.path import exists
 from json import load
-texts: dict = load(open("texts.json", 'r'))
-	
+# texts to be sent when you send some commands (explaned in CONTRIBUTING.md)
+if exists('texts.json'):
+	texts: dict = load(open("texts.json", 'r'))
+else:
+	print("please define your texts.json file described in README.md file")
+	exit()
+
 class App:
+	"""this class contains all methods and objects used to build telegram bot and logs."""
 	def __init__(self, token: str, **kwargs: dict):
 		self.bot: telebot.TeleBot = telebot.TeleBot(token)
 		self.bot_token: str = token
-		self.admins_list: list = kwargs.get("admins", ())
+		self.admins_list: list = kwargs.get("admins", ()) # admins, except the mains in your group.
 		self.cli_console = Console()
 		self.cli_console.rule("Bot object defined")
 		self.cli_console.print("token:", self.bot_token)
@@ -33,6 +39,7 @@ class App:
 		self.cli_console.log("admin list:", new_list)
 	
 	def log_message(self, message: dict) -> None:
+		"""print messages catchen from telebot."""
 		self.cli_console.log(f"message from \
 {message.from_user.first_name} \
 {message.from_user.last_name} \
@@ -124,80 +131,107 @@ class App:
 						message.chat.id,
 						message.message_id
 					)
+		def mode3(self, message, name):
+			"""\
+* private:
+	1. reply message
+	2. send message
+* group:
+	* sent by admin:
+		1. delete message
+		2. reply the replied message
+		3. send message (no mention)
+	* sent by user:
+		1. delete message
+		2. reply the replied message
+		3. send message (no mention)
+"""
+			self.log_message(message)
+			if message.chat.type == "private":
+				self.bot.reply_to(
+					message,
+					texts["private"]["command"][name]
+				)
+			elif message.chat.type in ("group", "supergroup"):
+				if message.reply_to_message:
+					self.bot.reply_to(
+						message.reply_to_message,
+						texts["group"]["command"][name]
+					)
+				self.bot.delete_message(
+					message.chat.id,
+					message.message_id
+				)
 	
 	def init(self):
+		"""defines commands and makes the bot ready to run."""
 		with Progress() as progress:
 			task: int = progress.add_task("init", total = 1)
+			# -------- /start --------
 			@self.bot.message_handler(
 				commands = ['start']
 			)
 			def start(message):
 				self.handle.mode2(self, message, "start")
 			progress.update(task, advance = 1)
+			# -------- /help --------
 			@self.bot.message_handler(
 				commands = ['help']
 			)
 			def help(message):
 				self.handle.mode2(self, message, "help")
 			progress.update(task, advance = 1)
+			# -------- /about --------
 			@self.bot.message_handler(
 				commands = ['about']
 			)
 			def about(message):
 				self.handle.mode2(self, message, "about")
 			progress.update(task, advance = 1)
-			
+			# - !l !learn !learning -
 			@self.bot.message_handler(
 				func = lambda message: message.text in ("!l", "!learn", "!learning")
 			)
 			def learning(message):
 				self.handle.mode1(self, message, "learning")
 			progress.update(task, advance = 1)
-			
+			# ------- !a !ask -------
 			@self.bot.message_handler(
 				func = lambda message: message.text in ("!a", "!ask")
 			)
 			def ask(message):
-				self.log_message(message)
-				if message.chat.type == "private":
-					self.bot.reply_to(
-						message,
-						texts["private"]["command"]["ask"]
-					)
-				elif message.chat.type in ("group", "supergroup"):
-					if message.reply_to_message:
-						self.bot.reply_to(
-							message.reply_to_message,
-							texts["group"]["command"]["ask"]
-						)
-					self.bot.delete_message(
-						message.chat.id,
-						message.message_id
-					)
+				self.handle.mode3(self, message, 'ask')
 			progress.update(task, advance = 1)
-			
+			# --- !p !prj !project ---
 			@self.bot.message_handler(
 				func = lambda message: message.text in ("!p", "!prj", "!project")
 			)
 			def project(message):
 				self.handle.mode1(self, message, "project")
 			progress.update(task, advance = 1)
-			
+			# ---- !i !irrelevant ----
 			@self.bot.message_handler(
 				func = lambda message: message.text in ("!i", "!irrelevant")
 			)
 			def irrelevant(message):
 				self.handle.mode1(self, message, "irrelevant")
 			progress.update(task, advance = 1)
-			
+			# - !b !bot !t !telebot -
 			@self.bot.message_handler(
 				func = lambda message: message.text in ("!b", "!bot", "!t", "!telebot")
 			)
 			def telegram_bot(message):
 				self.handle.mode1(self, message, "telegram_bot")
 			progress.update(task, advance = 1)
-			
+			# ------ !p !paste ------
+			@self.bot.message_handler(
+				func = lambda message: message.text in ("!p", "!paste")
+			)
+			def paste(message):
+				self.handle.mode3(self, message, 'paste')
+			progress.update(task, advance = 1)
 	def run(self):
+		"""runs the bot."""
 		try:
 			self.init()
 			self.cli_console.log("initialization done.")

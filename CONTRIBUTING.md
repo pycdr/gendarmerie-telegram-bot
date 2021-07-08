@@ -19,7 +19,7 @@ this file has the main class for telegram bot:
 * it uses `telebot` library to handle your telegram bot. you can use its `telebot.Bot` object with `App.bot` attribute.
 * `App.token` property is to set/get bot token, and `App.admins` property is to set/get bot administrators (if it's not in your group)
 * `log_message` shows informations of the given message. each mode (in `App.handle`) uses it.
-* `App.handle` method has 2 functions handling message (each has an special work) named `mode1` and `mode2`. its described in their doc string (e.g. use `help(App.handle.mode1)` to see for `mode1` method).
+* `App.handle` method has 3 functions handling message (each has an special work) named `mode1` and `mode2` and `mode3`. its described in their doc string (e.g. use `help(App.handle.mode1)` to see for `mode1` method).
 * `init` method defines commands:
   * `/start` for start command - mode 2
   * `/help` for help command - mode 2
@@ -47,27 +47,29 @@ this file contains all texts sending with commands. for example, when group crea
   * `command`
     * `start`: for `/start` command in private chat.
     * `about`: for `/about` command in private chat.
+    * `help`: for `/help` command in private chat.
     * `ask`: for `!ask` command in private chat.
+    * `paste`: for `!p` and `!paste` command in private chat.
     * `project`: for `!p`, `!prj` and `!project` command in private chat.
     * `irrelevant`: for `!i` and `!irrelevant` command in private chat.
-    * `telegram_bot`: for `!b`, `!bot` and `!telebot`  command in private chat.
     * `learning`: for `!l`, `!learn` and `!learning` command in private chat.
-    * `help`: for `/help` command in private chat.
+    * `telegram_bot`: for `!b`, `!bot` and `!telebot`  command in private chat.
 * `group`
   * `command`
     * `start`: for `/start` command in group.
     * `about`: for `/about` command in group.
     * `help`: for `/help` command in group.
-    * `learning`
-      * `admin`: for `!l`, `!learn` and `!learning` command in group (sent by admin)
-      * `user`: for `!l`, `!learn` and `!learning` command in group (sent by member).
-    * `ask`: for `!ask` command in private chat.
+    * `ask`: for `!ask` command in group.
+    * `paste`: for `!p` and `!paste` command in group.
     * `project`
       * `admin`: for `!p`, `!prj` and `!project` command in group (sent by admin)
       * `user`: for `!p`, `!prj` and `!project` command in group (sent by member)
     * `irrelevant`
       * `admin`: for `!i` and `!irrelevant` command in group (sent by admin)
       * `user`: for `!i` and `!irrelevant` command in group (sent by member)
+    * `learning`
+      * `admin`: for `!l`, `!learn` and `!learning` command in group (sent by admin)
+      * `user`: for `!l`, `!learn` and `!learning` command in group (sent by member)
     * `telegram_bot`
       * `admin`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by admin)
       * `user`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by member)

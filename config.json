@@ -1,5 +1,5 @@
 {
-	"token": "<put your bot token here>",
+	"token": "<put your token here>",
 	"users":{
 		"admins": []
 	}
