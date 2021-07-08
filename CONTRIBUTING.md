@@ -28,7 +28,7 @@ this file has the main class for telegram bot:
   * `!a` and `!ask` for non-directly questions - special mode!
   * `!p`, `!prj` and `!project` for project requests - mode 1
   * `!i` and `!irrelevant` for irrelevant questions - mode 1
-  * `!b`, `!bot` and `!telebot` for telegram bot questions - mode 1
+  * `!b`, `!bot`, `!t` and `!telebot` for telegram bot questions - mode 1
 * `run` method execute the bot and its required functions and the main loop (`App.bot.polling()`).
 ## JSON files
 
@@ -69,5 +69,5 @@ this file contains all texts sending with commands. for example, when group crea
       * `admin`: for `!i` and `!irrelevant` command in group (sent by admin)
       * `user`: for `!i` and `!irrelevant` command in group (sent by member)
     * `telegram_bot`
-      * `admin`: for `!b`, `!bot` and `!telebot`  command in group (sent by admin)
-      * `user`: for `!b`, `!bot` and `!telebot`  command in group (sent by member)
+      * `admin`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by admin)
+      * `user`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by member)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 import bot
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
