@@ -70,7 +70,7 @@ class App:
 						message.chat.id, 
 						message.message_id
 					)
-					if message.reply_to_message.chat:
+					if message.reply_to_message:
 						self.bot.delete_message(
 							message.reply_to_message.chat.id,
 							message.reply_to_message.message_id
