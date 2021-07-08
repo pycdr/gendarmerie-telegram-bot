@@ -225,7 +225,7 @@ class App:
 			progress.update(task, advance = 1)
 			# ------ !p !paste ------
 			@self.bot.message_handler(
-				func = lambda message: message.text in ("!p", "!paste")
+				func = lambda message: message.text in ("!paste")
 			)
 			def paste(message):
 				self.handle.mode3(self, message, 'paste')
