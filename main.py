@@ -24,15 +24,14 @@ $ ./main.py 'token' -a/--admin @id1 @id2 ...
 		parser.add_argument(
 			"token",
 			help = "token of your telegram bot",
-			type = str,
-			required = True
+			type = str
 		)
 		parser.add_argument(
 			"-a", "--admins",
 			help = "list of admins (@id1,@id2,...)",
 			action = "extend",
 			nargs = "+",
-			required = False
+			type = str
 		)
 		args = parser.parse_args()
 		token: str = args.token

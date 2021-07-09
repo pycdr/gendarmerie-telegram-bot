@@ -26,9 +26,11 @@ class App:
 	@token.setter
 	def token(self, new_token) -> None:
 		self.bot_token: str = new_token
+		del self.bot
 		self.bot: telebot.TeleBot = telebot.TeleBot(new_token)
 		self.cli_console.rule("token updated!")
 		self.cli_console.log("token:", new_token)
+		self.init()
 	
 	@property
 	def admins(self) -> list: return self.admins_list
