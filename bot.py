@@ -165,6 +165,44 @@ class App:
 					message.chat.id,
 					message.message_id
 				)
+		def mode4(self, message, name, key = None):
+			"""\
+* private:
+	1. reply message
+	2. send message
+* group:
+	* sent by admin:
+		1. delete message
+		2. reply the replied message
+		3. send message (no mention)
+	* sent by user:
+		1. delete message
+"""
+			self.log_message(message)
+			if message.chat.type == "private":
+				self.bot.reply_to(
+					message,
+					texts["private"]["command"][name][key] if key else texts["private"]["command"][name]
+				)
+			elif message.chat.type in ("group", "supergroup"):
+				if self.bot.get_chat_member(
+					message.chat.id,
+					message.from_user.id
+				).status in ("administrator", "creator"):
+					self.bot.delete_message(
+						message.chat.id, 
+						message.message_id
+					)
+					if message.reply_to_message:
+						self.bot.reply_to(
+							message.reply_to_message,
+							texts["group"]["command"][name][key] if key else texts["group"]["command"][name]
+						)
+				else:
+					self.bot.delete_message(
+						message.chat.id,
+						message.message_id
+					)
 	
 	def init(self):
 		"""defines commands and makes the bot ready to run."""
@@ -233,6 +271,14 @@ class App:
 			def paste(message):
 				self.handle.mode3(self, message, 'paste')
 			progress.update(task, advance = 1)
+			@self.bot.message_handler(
+				regexp = r"(!fun)(\d)+(?!.)"
+			)
+			def fun(message):
+				key = message.text[4:]
+				if key and key in texts["group"]["command"]["fun"] and key in texts["private"]["command"]["fun"]:
+					self.handle.mode4(self, message, 'fun', key)
+				
 	def run(self):
 		"""runs the bot."""
 		try:

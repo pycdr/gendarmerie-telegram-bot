@@ -53,7 +53,10 @@ $ ./main.py <token> -a @admin1 @admins2 ...
 				"project": "<private/command/project>",
 				"irrelevant": "<private/command/irrelevant>",
 				"learning": "<private/command/learning>",
-				"telegram_bot": "<private/command/telegram_bot>"
+				"telegram_bot": "<private/command/telegram_bot>",
+				"fun": {
+					"1": "<private/command/fun/1>"
+				}
 			}
 		},
 		"group": {
@@ -78,6 +81,9 @@ $ ./main.py <token> -a @admin1 @admins2 ...
 				"telegram_bot": {
 					"admin": "<group/command/telegram_bot/admin>",
 					"user": "<group/command/telegram_bot/user>"
+				},
+				"fun": {
+					"1": "<private/command/fun/1>"
 				}
 			}
 		}

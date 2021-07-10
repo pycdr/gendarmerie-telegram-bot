@@ -54,6 +54,7 @@ this file contains all texts sending with commands. for example, when group crea
     * `irrelevant`: for `!i` and `!irrelevant` command in private chat.
     * `learning`: for `!l`, `!learn` and `!learning` command in private chat.
     * `telegram_bot`: for `!b`, `!bot` and `!telebot`  command in private chat.
+    * `fun`: for `!fun` command in private chat - contains some other commands (defined as their code). e.g. `!fun1` in group will send `texts["private"]["command"]["fun"]["1"]`
 * `group`
   * `command`
     * `start`: for `/start` command in group.
@@ -73,3 +74,4 @@ this file contains all texts sending with commands. for example, when group crea
     * `telegram_bot`
       * `admin`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by admin)
       * `user`: for `!b`, `!bot`, `!t` and `!telebot`  command in group (sent by member)
+    * `fun`: for `!fun` command in group (only for admins) - contains some other commands (defined as their code). e.g. `!fun1` in group will send `texts["group"]["command"]["fun"]["1"]`
