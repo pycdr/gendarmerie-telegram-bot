@@ -9,7 +9,7 @@ class MySQLHandler:
 			if len(list(cursor)) == 0: # 'groups' table doesn't exist
 				cursor.execute(
 					"CREATE TABLE groups (\
-						group_id int NOT NULL, \
+						group_id bigint NOT NULL, \
 						group_name varchar(255) NOT NULL, \
 						group_username varchar(255), \
 						PRIMARY KEY (group_id)\
@@ -23,10 +23,10 @@ class MySQLHandler:
 					text varchar(255),\
 					delete_replied bool,\
 					admin_only bool,\
-					group_id int NOT NULL,\
+					group_id bigint NOT NULL,\
 					FOREIGN KEY (group_id) REFERENCES groups(group_id));"
 				)
-		
+
 	def add_group(self, group_id: int, group_name: str, group_username: str = "NULL") -> (bool, str):
 		if group_username != "NULL":
 			group_username = repr(group_username)
@@ -40,7 +40,7 @@ class MySQLHandler:
 		except IntegrityError as err:
 			return False, repr(err)
 		return True, ''
-	
+
 	def get_group(self, group_id: int):
 		try:
 			with self.connection.cursor() as cursor:
@@ -51,7 +51,7 @@ class MySQLHandler:
 		except Exception as err:
 			return False, repr(err)
 		return True, res
-	
+
 	def get_groups(self):
 		try:
 			with self.connection.cursor() as cursor:
@@ -60,7 +60,7 @@ class MySQLHandler:
 		except Exception as err:
 			return False, repr(err)
 		return True, res
-	
+
 	def add_command(
 		self, group_id: int, command: str, text: str,
 		 delete_replied: bool = False, admin_only: bool = True
@@ -86,7 +86,7 @@ class MySQLHandler:
 		except IntegrityError as err:
 			return False, repr(err)
 		return True, ''
-		
+
 	def remove_command(self, group_id: int, command: str) -> (bool, str):
 		try:
 			with self.connection.cursor() as cursor:
@@ -98,7 +98,7 @@ class MySQLHandler:
 		except Exception as err:
 			return False, repr(err)
 		return True, ''
-		
+
 	def update_command(self, group_id: int, command: str, **updates) -> (bool, str):
 		update_sql_code = ", ".join(
 			f"{key} = '{value}'"

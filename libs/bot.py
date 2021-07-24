@@ -68,17 +68,17 @@ class App:
 								)
 							return
 						if res:
-							if self.get_chat_member(
+							if self.bot.get_chat_member(
 								res[0],
 								message.from_user.id
-							).status in ("administrator", "group"):
+							).status in ("administrator", "creator"):
 								self.mode.update({
 									message.from_user.id: (1, (res, ))
 								})
 								self.bot.send_message(
 									message.chat.id,
 									"OK, send me some new command names (can contain charaters from ascii code 33 to 126, like letters, numbers and ...). please list them like this:\n```command1\ncommand2\n...```\n**notice that they will do the same job!**\nyou can send /cancel to cancel the process.",
-									pasre_mode = "MarkDown"
+									parse_mode = "MarkDown"
 								)
 							else:
 								self.bot.reply_to(
@@ -106,8 +106,8 @@ class App:
 						group
 						for group in res
 						if self.bot.get_chat_member(
-							int(group[0]),
-							message.user_from.id
+							group[0],
+							message.from_user.id
 						).status in ("administrator", "creator")
 					]
 					self.bot.reply_to(
@@ -122,14 +122,14 @@ class App:
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
 			self.bot.send_message(message.chat.id, "process canceled")
-		
+
 		@self.bot.message_handler(commands = ['add'])
 		def add(message):
 			if message.chat.type in ("group", "supergroup"):
-				if self.get_chat_member(
+				if self.bot.get_chat_member(
 					message.chat.id,
 					message.from_user.id
-				).status in ("administrator", "group"):
+				).status in ("administrator", "creator"):
 					res, err = self.mysql.add_group(message.chat.id, message.chat.title, message.chat.username or "NULL")
 					if not res:
 						self.bot.reply_to(
