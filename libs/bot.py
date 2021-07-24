@@ -122,6 +122,38 @@ class App:
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
 			self.bot.send_message(message.chat.id, "process canceled")
+		
+		@self.bot.message_handler(commands = ['add'])
+		def add(message):
+			if message.chat.type in ("group", "supergroup"):
+				if self.get_chat_member(
+					message.chat.id,
+					message.from_user.id
+				).status in ("administrator", "group"):
+					res, err = self.mysql.add_group(message.chat.id, message.chat.title, message.chat.username or "NULL")
+					if not res:
+						self.bot.reply_to(
+							message,
+							"unsuccessful: "+err
+						)
+					else:
+						self.bot.send_message(
+							message.chat.id,
+							f"done! now, click here to add a new command:  t.me/{self.info.username}?start={message.chat.id}"
+						)
+				else:
+					try:
+						self.bot.delete_message(
+							message.chat.id,
+							message.message_id
+						)
+					except ApiTelegramException:
+						pass
+			else:
+				self.bot.send_message(
+					message.chat.id,
+					"please send this command in your group!"
+				)
 
 		@self.bot.message_handler(content_types = ["text"])
 		def check_msg(message):
