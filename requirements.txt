@@ -1,3 +1,2 @@
 rich==9.8.2
 pyTelegramBotAPI==3.7.9
-watchdog==2.1.3
