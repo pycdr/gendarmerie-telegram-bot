@@ -17,7 +17,7 @@ class App:
 
 	def add_commands(self, group_data: tuple, commands_names: list, commands_text: str, delete_replied: bool, admin_only: bool) -> (bool, str):
 		for command_name in commands_names:
-			res, err = self.mysql.add_command(group_data[0], command_name, command_text, delete_replied, admin_only)
+			res, err = self.mysql.add_command(group_data[0], command_name, commands_text, delete_replied, admin_only)
 			if not res:
 				break
 		else:
@@ -52,19 +52,20 @@ class App:
 						"invalid parameters! please just send /start without anything else!"
 					)
 				elif len(parts) == 2:
-					if not parts[1].isdigit():
-						self.bot.reply_to(
-							message,
-							"invalid group argument!"
-						)
-					else:
+					try:
 						group_id = int(parts[1])
 						successful, res = self.mysql.get_group(group_id)
 						if successful == False:
-							self.bot.reply_to(
-								message,
-								"unsuccessful: "+res
-							)
+							if res:
+								self.bot.reply_to(
+									message,
+									"unsuccessful: "+res
+								)
+							else:
+								self.bot.reply_to(
+									message,
+									"no group found for you. send /add in your group to add it."
+								)
 							return
 						if res:
 							if self.get_chat_member(
@@ -88,6 +89,11 @@ class App:
 							self.bot.reply_to(
 								f"no group found by id {group_id}. please add the bot to your group, then send /start there."
 							)
+					except ValueError:
+						self.bot.reply_to(
+							message,
+							"invalid group argument!"
+						)
 				else:
 					successful, res = self.mysql.get_groups()
 					if successful == False:
