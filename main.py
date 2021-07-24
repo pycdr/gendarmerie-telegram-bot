@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import libs.bot
+from libs import bot
 from getpass import getpass
 
 def main() -> None:
@@ -12,7 +12,7 @@ $ ./main.py 'token'
 	parser = ArgumentParser(
 		prog = "PyBot",
 		description = "telegram bot for handling groups, easy to use!",
-		elipog = "welcome to Barareh! :)"
+		epilog = "welcome to Barareh! :)"
 	)
 	parser.add_argument(
 		"token",
@@ -41,11 +41,11 @@ $ ./main.py 'token'
 	database: str = args.database
 	password: str = getpass("password: ")
 	app = bot.App(
-		token, token = token, host = host,
-		user = user, database = database, passworrd = password
+		token, host = host,
+		user = user, database = database, password = password
 	)
 	app.init()
-	app.start()
-	
+	app.run()
+
 if __name__ == "__main__":
 	main()

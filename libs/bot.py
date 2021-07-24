@@ -11,10 +11,10 @@ class App:
 		self.bot = telebot.TeleBot(token)
 		self.info = self.bot.get_me()
 		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation, 5=process), (...))
-		
+
 	def log_message(self, message: dict) -> None:
 		pass
-	
+
 	def add_commands(self, group_data: tuple, commands_names: list, commands_text: str, delete_replied: bool, admin_only: bool) -> (bool, str):
 		for command_name in commands_names:
 			res, err = self.mysql.add_command(group_data[0], command_name, command_text, delete_replied, admin_only)
@@ -23,7 +23,7 @@ class App:
 		else:
 			err = ''
 		return res, err
-		
+
 	def init(self):
 		@self.bot.message_handler(commands = ['start'])
 		def start(message):
@@ -33,7 +33,7 @@ class App:
 					message.from_user.id
 				).status in ("administrator", "creator")):
 				self.bot.reply_to(
-					message, 
+					message,
 					"hello:) please send /set in your group, if you want to set a command for your group (don't forget that i have to be administrator of your group!)"
 				)
 			else:
@@ -45,7 +45,7 @@ class App:
 				except ApiTelegramException:
 					pass
 				self.mode[message.from_user.id] = (-1, ())
-		
+
 		@self.bot.message_handler(commands = ['set'])
 		def set(message):
 			if message.chat.type in ("group", "supergroup"):
@@ -53,15 +53,18 @@ class App:
 					message.chat.id,
 					message.from_user.id
 				).status in ("administrator", "creator"):
-				self.bot.reply_to(
-					message,
-					f"click there to add command: t.me/{self.info.username}?set={message.chat.id}"
-				)
-				else:
-					self.bot.delete_message(
-						message.chat.id,
-						message.from_user.id
+					self.bot.reply_to(
+						message,
+						f"click there to add command: t.me/{self.info.username}?set={message.chat.id}"
 					)
+				else:
+					try:
+						self.bot.delete_message(
+							message.chat.id,
+							message.from_user.id
+						)
+					except ApiTelegramException:
+						pass
 			else:
 				parts: list = message.text.split(" ")
 				if len(parts) > 2:
@@ -115,6 +118,7 @@ class App:
 						)
 						return
 					groups = [
+						group
 						for group in res
 						if self.bot.get_chat_member(
 							int(group[0]),
@@ -126,14 +130,14 @@ class App:
 						"your group: \n" + "\n".join(
 							f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: t.me/{self.info.username}?set={x[0]}"
 							for x in groups
-						) if len(group) > 0 else "no group for you:("
+						) if len(groups) > 0 else "no group for you:("
 					)
-			
+
 		@self.bot.message_handler(commands = ['cancel'])
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
 			self.bot.send_message(message.chat.id, "process canceled")
-		
+
 		@self.bot.message_handler(content_types = ["text"])
 		def check_msg(message):
 			user_id = message.from_user.id
@@ -150,14 +154,14 @@ class App:
 						parse_mode = "MarkDown"
 					)
 					return
-				self.mode[user_id] = (2, (*data, commands))
+				self.mode[user_id] = (1, (*data, commands))
 				self.bot.send_message(
 					chat_id,
 					"commands saved! now, please send the command text (and nothing else! just in 1 message):\n(also, you can mention user and add its name to the text. just write %user_mention% where you want)"
 				)
 			elif mode == 1:
 				# data: ((group_id, group_name, group_username), [command1, command2, ...])
-				self.mode[user_id] = (, (*data, message.text))
+				self.mode[user_id] = (2, (*data, message.text))
 				markup = telebot.types.ReplyKeyboardMarkup(row_width = 2)
 				markup.add(
 					telebot.types.KeyboardButton("✅"),
@@ -226,15 +230,7 @@ class App:
 				mode, ((group_id, group_name, group_username), commands_names, commands_text, delete_replied, admin_only) = self.mode[user_id]
 				self.bot.send_message(
 					message.chat.id,
-					f"option saved! so, this is the details of your command(s):\
-▶️ group \"{group_name}\"{' @'+group_username if group_username else ''} (id: {group_id})\n\
-▶️ command names:\n\
-{'\n'.join(commands_names)}\n\
-▶️ text:\n\
-{commands_text}\n\
-▶️ delete replied message: {['no', 'yes'][delete_replied]}\n\
-▶️ only for administrators: {['no', 'yes'][admin_only]}\n\
-so, are you sure to add it?",
+					f"option saved! so, this is the details of your command(s):▶️ group \"{group_name}\"{' @'+group_username if group_username else ''} (id: {group_id})\n▶️ command names:\n{chr(10).join(commands_names)}\n▶️ text:\n{commands_text}\n▶️ delete replied message: {['no', 'yes'][delete_replied]}\n▶️ only for administrators: {['no', 'yes'][admin_only]}\nso, are you sure to add it?",
 					reply_markup = markup
 				)
 			elif mode == 5:
@@ -267,6 +263,6 @@ so, are you sure to add it?",
 						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
 					)
 				self.mode[user_id] = (-1, ())
-		
+
 	def run(self):
 		self.bot.polling()
