@@ -27,27 +27,6 @@ class App:
 	def init(self):
 		@self.bot.message_handler(commands = ['start'])
 		def start(message):
-			if	message.chat.type == "private" or \
-				(message.chat.type in ("group", "supergroup") and self.bot.get_chat_member(
-					message.chat.id,
-					message.from_user.id
-				).status in ("administrator", "creator")):
-				self.bot.reply_to(
-					message,
-					"hello:) please send /set in your group, if you want to set a command for your group (don't forget that i have to be administrator of your group!)"
-				)
-			else:
-				try:
-					self.bot.delete_message(
-						message.chat.id,
-						message.message_id
-					)
-				except ApiTelegramException:
-					pass
-				self.mode[message.from_user.id] = (-1, ())
-
-		@self.bot.message_handler(commands = ['set'])
-		def set(message):
 			if message.chat.type in ("group", "supergroup"):
 				if self.bot.get_chat_member(
 					message.chat.id,
@@ -55,7 +34,7 @@ class App:
 				).status in ("administrator", "creator"):
 					self.bot.reply_to(
 						message,
-						f"click there to add command: t.me/{self.info.username}?set={message.chat.id}"
+						f"click there to add command: t.me/{self.info.username}?start={message.chat.id}"
 					)
 				else:
 					try:
@@ -70,7 +49,7 @@ class App:
 				if len(parts) > 2:
 					self.bot.reply_to(
 						message,
-						"invalid parameters! please just send /set without anything else!"
+						"invalid parameters! please just send /start without anything else!"
 					)
 				elif len(parts) == 2:
 					if not parts[1].isdigit():
@@ -128,7 +107,7 @@ class App:
 					self.bot.reply_to(
 						message,
 						"your group: \n" + "\n".join(
-							f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: t.me/{self.info.username}?set={x[0]}"
+							f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: t.me/{self.info.username}?start={x[0]}"
 							for x in groups
 						) if len(groups) > 0 else "no group for you:("
 					)
