@@ -11,6 +11,14 @@ class App:
 		self.bot = telebot.TeleBot(token)
 		self.info = self.bot.get_me()
 		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation), (...))
+		self.commands = {} # chat_id: {command_name: (text, deleted_replied, admin_only)}
+		commands = self.mysql.get_commands()
+		for command in commands:
+			group_id = command[4]
+			command_name = command[0]
+			if group_id not in self.commands:
+				self.commands[group_id] = {}
+			self.commands[group_id][command_name] = command
 
 	def log_message(self, message: dict) -> None:
 		pass
@@ -20,6 +28,9 @@ class App:
 			res, err = self.mysql.add_command(group_data[0], command_name, commands_text, delete_replied, admin_only)
 			if not res:
 				break
+			if group_data[0] not in self.commands:
+				self.commands[group_data[0]] = {}
+			self.commands[group_data[0]][command_name] = (commands_text, delete_replied, admin_only)
 		else:
 			err = ''
 		return res, err
@@ -27,6 +38,7 @@ class App:
 	def init(self):
 		@self.bot.message_handler(commands = ['start'])
 		def start(message):
+			self.mode[message.from_user.id] = (-1, ())
 			if message.chat.type in ("group", "supergroup"):
 				if self.bot.get_chat_member(
 					message.chat.id,
@@ -161,6 +173,39 @@ class App:
 			chat_id = message.chat.id
 			if user_id not in self.mode: return
 			mode, data = self.mode[user_id]
+			if message.chat.type in ("group", "supergroup"):
+				command = message.text
+				if chat_id not in self.commands or user_id not in self.commands[chat_id]:
+					return
+				text, delete_replied, admin_only = self.commands[chat_id][user_id]
+				is_admin = self.bot.get_chat_member(
+					message.chat.id,
+					message.from_user,id
+				).status in ("administrator", "creator")
+				if admin_only and not is_admin:
+					return
+				if delete_replied:
+					try:
+						if is_admin:
+							self.bot.delete_message(
+								message.chat.id,
+								message.message_id
+							)
+						self.bot.send_message(
+							message.chat.id,
+							text.format(mention = "tg://user?id="+str(user_id))
+						)
+					except ApiTelegramException:
+						pass
+				else:
+					try:
+						self.bot.reply_to(
+							message,
+							text
+						)
+					except ApiTelegramException:
+						pass
+				return
 			if mode == 0:
 				# data: ((group_id, group_name, group_username), )
 				commands = [x for x in message.text.split('\n') if x != '']
