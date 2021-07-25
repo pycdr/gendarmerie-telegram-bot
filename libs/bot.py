@@ -111,7 +111,7 @@ class App:
 						)
 				else:
 					successful, res = self.mysql.get_groups()
-					if successful == False:
+					if not successful:
 						self.bot.reply_to(
 							message,
 							"unsuccessful: "+res
@@ -177,15 +177,11 @@ class App:
 			if user_id not in self.mode:
 				self.mode[user_id] = (-1, ())
 			mode, data = self.mode[user_id]
-			print(mode, data)
 			if message.chat.type in ("group", "supergroup"):
 				command = message.text
-				print(command)
 				if chat_id not in self.commands or command not in self.commands[chat_id]:
 					return
-				print(self.commands[chat_id][command])
 				_, text, delete_replied, admin_only, _ = self.commands[chat_id][command]
-				print(text, delete_replied, admin_only)
 				is_admin = self.bot.get_chat_member(
 					message.chat.id,
 					message.from_user.id
@@ -204,8 +200,8 @@ class App:
 							text.format(user_mention = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
 							parse_mode = "MarkDown"
 						)
-					except ApiTelegramException as err:
-						print(err)
+					except ApiTelegramException:
+						pass
 				else:
 					try:
 						self.bot.reply_to(
@@ -303,12 +299,19 @@ class App:
 							reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
 						)
 					else:
-						self.bot.send_message(
-							message.chat.id,
-							"unsuccessful:( i reported this to my creator, sorry for this!",
-							reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
-						)
-						print("error catchen for data (", data, ") - error: ", err)
+						if err == '':
+							self.bot.send_message(
+								message.chat.id,
+								"it has been set for your group! if you want to delete this command, wait for next update...! :)",
+								reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+							)
+						else:
+							self.bot.send_message(
+								message.chat.id,
+								"unsuccessful:( i reported this to my creator, sorry for this!",
+								reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+							)
+							print("error catchen for data (", data, ") - error: ", err)
 				else:
 					self.bot.send_message(
 						message.chat.id,
