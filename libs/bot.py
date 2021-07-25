@@ -10,7 +10,7 @@ class App:
 		self.mysql = MySQLHandler(**kwargs)
 		self.bot = telebot.TeleBot(token)
 		self.info = self.bot.get_me()
-		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation, 5=process), (...))
+		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation), (...))
 
 	def log_message(self, message: dict) -> None:
 		pass
@@ -73,7 +73,7 @@ class App:
 								message.from_user.id
 							).status in ("administrator", "creator"):
 								self.mode.update({
-									message.from_user.id: (1, (res, ))
+									message.from_user.id: (0, (res, ))
 								})
 								self.bot.send_message(
 									message.chat.id,
@@ -224,33 +224,15 @@ class App:
 					telebot.types.KeyboardButton("✅"),
 					telebot.types.KeyboardButton("❌")
 				)
-				self.bot.send_message(
-					message.chat.id,
-					"option saved! now, tell me is it only for administrators? \n(if it is, so normal users won't be able to use these commands)",
-					reply_markup = markup
-				)
-			elif mode == 4:
-				# data: ((group_id, group_name, group_username), [command1, command2, ...], "text", delete_replied, admin_only)
-				res = message.text
-				if res not in "❌✅":
-					self.reply_to(
-						message,
-						"invalid message! just choose one of these keyboards..."
-					)
-					return
-				self.mode[user_id] = (5, (*data, bool("❌✅".index(res))))
-				markup = telebot.types.ReplyKeyboardMarkup(row_width = 2)
-				markup.add(
-					telebot.types.KeyboardButton("✅"),
-					telebot.types.KeyboardButton("❌")
-				)
 				mode, ((group_id, group_name, group_username), commands_names, commands_text, delete_replied, admin_only) = self.mode[user_id]
 				self.bot.send_message(
 					message.chat.id,
 					f"option saved! so, this is the details of your command(s):▶️ group \"{group_name}\"{' @'+group_username if group_username else ''} (id: {group_id})\n▶️ command names:\n{chr(10).join(commands_names)}\n▶️ text:\n{commands_text}\n▶️ delete replied message: {['no', 'yes'][delete_replied]}\n▶️ only for administrators: {['no', 'yes'][admin_only]}\nso, are you sure to add it?",
 					reply_markup = markup
 				)
-			elif mode == 5:
+
+			elif mode == 4:
+				# data: ((group_id, group_name, group_username), [command1, command2, ...], "text", delete_replied, admin_only)
 				res = message.text
 				if res not in "❌✅":
 					self.reply_to(
