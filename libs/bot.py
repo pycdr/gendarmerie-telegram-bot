@@ -12,8 +12,11 @@ class App:
 		self.info = self.bot.get_me()
 		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation), (...))
 		self.commands = {} # chat_id: {command_name: (text, deleted_replied, admin_only)}
-		commands = self.mysql.get_commands()
-		for command in commands:
+		successful, res = self.mysql.get_commands()
+		if not successful:
+			print("unsuccessful for get commands:", res)
+			exit()
+		for command in res:
 			group_id = command[4]
 			command_name = command[0]
 			if group_id not in self.commands:
@@ -30,7 +33,7 @@ class App:
 				break
 			if group_data[0] not in self.commands:
 				self.commands[group_data[0]] = {}
-			self.commands[group_data[0]][command_name] = (commands_text, delete_replied, admin_only)
+			self.commands[group_data[0]][command_name] = (command_name, commands_text, delete_replied, admin_only, group_data[0])
 		else:
 			err = ''
 		return res, err
@@ -171,16 +174,21 @@ class App:
 		def check_msg(message):
 			user_id = message.from_user.id
 			chat_id = message.chat.id
-			if user_id not in self.mode: return
+			if user_id not in self.mode:
+				self.mode[user_id] = (-1, ())
 			mode, data = self.mode[user_id]
+			print(mode, data)
 			if message.chat.type in ("group", "supergroup"):
 				command = message.text
-				if chat_id not in self.commands or user_id not in self.commands[chat_id]:
+				print(command)
+				if chat_id not in self.commands or command not in self.commands[chat_id]:
 					return
-				text, delete_replied, admin_only = self.commands[chat_id][user_id]
+				print(self.commands[chat_id][command])
+				_, text, delete_replied, admin_only, _ = self.commands[chat_id][command]
+				print(text, delete_replied, admin_only)
 				is_admin = self.bot.get_chat_member(
 					message.chat.id,
-					message.from_user,id
+					message.from_user.id
 				).status in ("administrator", "creator")
 				if admin_only and not is_admin:
 					return
@@ -188,19 +196,20 @@ class App:
 					try:
 						if is_admin:
 							self.bot.delete_message(
-								message.chat.id,
-								message.message_id
+								message.reply_to_message.chat.id,
+								message.reply_to_message.message_id
 							)
 						self.bot.send_message(
 							message.chat.id,
-							text.format(mention = "tg://user?id="+str(user_id))
+							text.format(user_mention = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
+							parse_mode = "MarkDown"
 						)
-					except ApiTelegramException:
-						pass
+					except ApiTelegramException as err:
+						print(err)
 				else:
 					try:
 						self.bot.reply_to(
-							message,
+							message.reply_to_message,
 							text
 						)
 					except ApiTelegramException:
@@ -219,7 +228,7 @@ class App:
 				self.mode[user_id] = (1, (*data, commands))
 				self.bot.send_message(
 					chat_id,
-					"commands saved! now, please send the command text (and nothing else! just in 1 message):\n(also, you can mention user and add its name to the text. just write %user_mention% where you want)"
+					"commands saved! now, please send the command text (and nothing else! just in 1 message):\n(also, you can mention user and add its name to the text. just write {user_mention} where you want)"
 				)
 			elif mode == 1:
 				# data: ((group_id, group_name, group_username), [command1, command2, ...])
