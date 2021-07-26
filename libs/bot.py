@@ -235,7 +235,8 @@ class App:
 				)
 			elif mode == 1:
 				# data: ((group_id, group_name, group_username), [command1, command2, ...])
-				self.mode[user_id] = (2, (*data, message.text))
+				text = message.text.replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
+				self.mode[user_id] = (2, (*data, text))
 				markup = telebot.types.ReplyKeyboardMarkup(row_width = 2)
 				markup.add(
 					telebot.types.KeyboardButton("✅"),
