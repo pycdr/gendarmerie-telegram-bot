@@ -203,7 +203,7 @@ class App:
 						if message.reply_to_message:
 							self.bot.send_message(
 								message.chat.id,
-								text.format(user_mention = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
+								text.replace("{usermention}", "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
 								parse_mode = "MarkDown"
 							)
 					except ApiTelegramException:
@@ -231,7 +231,7 @@ class App:
 				self.mode[user_id] = (1, (*data, commands))
 				self.bot.send_message(
 					chat_id,
-					"commands saved! now, please send the command text (and nothing else! just in 1 message):\n(also, you can mention user and add its name to the text. just write {user_mention} where you want)"
+					"commands saved! now, please send the command text (and nothing else! just in 1 message):\n(also, you can mention user and add its name to the text. just write {usermention} where you want)"
 				)
 			elif mode == 1:
 				# data: ((group_id, group_name, group_username), [command1, command2, ...])
