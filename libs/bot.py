@@ -188,26 +188,33 @@ class App:
 				).status in ("administrator", "creator")
 				if admin_only and not is_admin:
 					return
+				self.bot.delete_message(
+					message.chat.id,
+					message.message_id
+				)
 				if delete_replied:
 					try:
 						if is_admin:
-							self.bot.delete_message(
-								message.reply_to_message.chat.id,
-								message.reply_to_message.message_id
+							if message.reply_to_message:
+								self.bot.delete_message(
+									message.reply_to_message.chat.id,
+									message.reply_to_message.message_id
+								)
+						if message.reply_to_message:
+							self.bot.send_message(
+								message.chat.id,
+								text.format(user_mention = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
+								parse_mode = "MarkDown"
 							)
-						self.bot.send_message(
-							message.chat.id,
-							text.format(user_mention = "["+str(message.reply_to_message.from_user.first_name)+" "+str(message.reply_to_message.from_user.last_name or "")+"](tg://user?id="+str(message.reply_to_message.from_user.id)+")"),
-							parse_mode = "MarkDown"
-						)
 					except ApiTelegramException:
 						pass
 				else:
 					try:
-						self.bot.reply_to(
-							message.reply_to_message,
-							text
-						)
+						if message.reply_to_message:
+							self.bot.reply_to(
+								message.reply_to_message,
+								text
+							)
 					except ApiTelegramException:
 						pass
 				return
