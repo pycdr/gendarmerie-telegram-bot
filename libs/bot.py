@@ -10,7 +10,20 @@ class App:
 		self.mysql = MySQLHandler(**kwargs)
 		self.bot = telebot.TeleBot(token)
 		self.info = self.bot.get_me()
-		self.mode = {} # user_id: (current_level (-1=nothing, 0=cmd-names, 1=cmd-text, 2=cmd-delete_replied, 3=cmd-admin_only, 4=submitation), (...))
+		self.mode = {}
+		# user_id: (
+		# 	current_level (
+		# 		-1 = nothing,
+		# 		0 = AddCmd-CmdNames,
+		# 		1 = AddCmd-CmdText,
+		# 		2 = AddCmd-CmdDeleteReplied,
+		# 		3 = AddCmd-CmdAdminOnly,
+		# 		4 = AddCmd-Submitation,
+		# 		5 = DelCmd-GetGroupId,
+		# 		6 = DelCmd-GetCmdName
+		# 	),
+		# 	(...)
+		# )
 		self.commands = {} # chat_id: {command_name: (text, deleted_replied, admin_only)}
 		successful, res = self.mysql.get_commands()
 		if not successful:
@@ -136,7 +149,55 @@ class App:
 		@self.bot.message_handler(commands = ['cancel'])
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
-			self.bot.send_message(message.chat.id, "process canceled")
+			self.bot.send_message(message.chat.id, "process canceled", markup = telebot.types.ReplyKeyboardRemove(selective=False))
+		
+		@self.bot.message_handler(commands = ['del'])
+		def delete(message):
+			if message.chat.type in ("group", "supergroup"):
+				if self.bot.get_chat_member(
+					message.chat.id,
+					message.from_user.id
+				).status in ("administrator", "creator"):
+					self.bot.reply_to(
+						message,
+						f"click there to add command: t.me/{self.info.username}?start={message.chat.id}"
+					)
+				else:
+					try:
+						self.bot.delete_message(
+							message.chat.id,
+							message.from_user.id
+						)
+					except ApiTelegramException:
+						pass
+			successful, res = self.mysql.get_groups()
+			if not successful:
+				self.bot.reply_to(
+					message,
+					"unsuccessful: "+res
+				)
+				return
+			groups = [
+				group
+				for group in res
+				if self.bot.get_chat_member(
+					group[0],
+					message.from_user.id
+				).status in ("administrator", "creator")
+			]
+			markup = telebot.types.ReplyKeyboardMarkup(row_width = 4 if len(groups) > 4 else len(groups))
+			for group in groups:
+				markup.add(str(group[0]))
+			self.bot.send_message(
+				message.chat.id,
+				"your group: \n" + "\n".join(
+					f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: {x[0]}"
+					for x in groups
+				)+"\nso, choose one of these group IDs:" if len(groups) > 0 else "no group for you:(",
+				reply_markup = markup if len(groups) > 0 else telebot.types.ReplyKeyboardRemove(selective=False)
+			)
+			if len(groups) > 0:
+				self.mode[message.from_user.id] = (5, ())
 
 		@self.bot.message_handler(commands = ['add'])
 		def add(message):
@@ -310,7 +371,7 @@ class App:
 						if err == '':
 							self.bot.send_message(
 								message.chat.id,
-								"it has been set for your group! if you want to delete this command, wait for next update...! :)",
+								"it has been set for your group! if you want to delete this command, use /del to do it.",
 								reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
 							)
 						else:
@@ -326,6 +387,58 @@ class App:
 						"process canceled.",
 						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
 					)
+				self.mode[user_id] = (-1, ())
+			elif mode == 5:
+				if not message.text.isnumeric():
+					self.bot.reply_to(
+						message,
+						"invalid group id! please choose from the keyboard:"
+					)
+					return
+				group = int(message.text.isnumeric())
+				self.mode[user_id] = (6, (group))
+				commands = self.mysql.get_commands(group)
+				if len(commands) == 0:
+					self.bot.send_message(
+						chat_id,
+						"no command for your group!\nset command with command /start",
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+					)
+					self.mode[user_id] = (-1, ())
+				markup = telebot.types.ReplyKeyboardMarkup(row_width = 4 if len(commands) > 4 else len(commands))
+				for group in groups:
+					markup.add(group[0])
+				self.bot.send_message(
+					chat_id,
+					"Ok, now, choose one of these commands:\n"+'\n'.join(
+						command[0]
+						for command in commands
+					)
+				)
+				
+			elif mode == 6:
+				command = message.text
+				group = data[0]
+				if command not in self.mysql.get_commands(group):
+					self.bot.reply_to(
+						message,
+						"invalid command! please choose from the keyboard:"
+					)
+					return
+				successful, err = self.mysql.remove_command(group, command)
+				if successful:
+					self.bot.send_message(
+						chat_id,
+						"done!",
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+					)
+				else:
+					self.bot.send_message(
+						message.chat.id,
+						"unsuccessful:( i reported this to my creator, sorry for this!",
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+					)
+					print("error catchen for data (", data, ") - error: ", err)
 				self.mode[user_id] = (-1, ())
 
 	def run(self):
