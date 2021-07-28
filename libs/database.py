@@ -61,16 +61,16 @@ class MySQLHandler:
 			return False, repr(err)
 		return True, res
 
-	def get_commands(self, group_id):
+	def get_commands(self):
 		try:
 			with self.connection.cursor() as cursor:
-				cursor.execute("SELECT * FROM commands WHERE group_id="+str(group_id))
+				cursor.execute("SELECT * FROM commands")
 				res = cursor.fetchall()
 		except Exception as err:
 			return False, repr(err)
 		return True, res
-	
-	
+
+
 	def add_command(
 		self, group_id: int, command: str, text: str,
 		 delete_replied: bool = False, admin_only: bool = True

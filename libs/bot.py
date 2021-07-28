@@ -150,7 +150,7 @@ class App:
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
 			self.bot.send_message(message.chat.id, "process canceled", markup = telebot.types.ReplyKeyboardRemove(selective=False))
-		
+
 		@self.bot.message_handler(commands = ['del'])
 		def delete(message):
 			if message.chat.type in ("group", "supergroup"):
@@ -389,15 +389,15 @@ class App:
 					)
 				self.mode[user_id] = (-1, ())
 			elif mode == 5:
-				if not message.text.isnumeric():
+				if not (message.text[0] == '-' and message.text[1:].isnumeric()):
 					self.bot.reply_to(
 						message,
 						"invalid group id! please choose from the keyboard:"
 					)
 					return
-				group = int(message.text.isnumeric())
-				self.mode[user_id] = (6, (group))
-				commands = self.mysql.get_commands(group)
+				group = int(message.text)
+				self.mode[user_id] = (6, (group,))
+				commands = [x for x in self.mysql.get_commands()[1] if x[4] == group]
 				if len(commands) == 0:
 					self.bot.send_message(
 						chat_id,
@@ -405,21 +405,23 @@ class App:
 						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
 					)
 					self.mode[user_id] = (-1, ())
+					return
 				markup = telebot.types.ReplyKeyboardMarkup(row_width = 4 if len(commands) > 4 else len(commands))
-				for group in groups:
-					markup.add(group[0])
+				for command in commands:
+					markup.add(command[0])
 				self.bot.send_message(
 					chat_id,
 					"Ok, now, choose one of these commands:\n"+'\n'.join(
 						command[0]
 						for command in commands
-					)
+					),
+					reply_markup = markup
 				)
-				
+
 			elif mode == 6:
 				command = message.text
 				group = data[0]
-				if command not in self.mysql.get_commands(group):
+				if command not in [x[0] for x in self.mysql.get_commands()[1] if x[4] == group]:
 					self.bot.reply_to(
 						message,
 						"invalid command! please choose from the keyboard:"
@@ -440,6 +442,7 @@ class App:
 					)
 					print("error catchen for data (", data, ") - error: ", err)
 				self.mode[user_id] = (-1, ())
+				del self.commands[group][command]
 
 	def run(self):
 		self.bot.polling()
