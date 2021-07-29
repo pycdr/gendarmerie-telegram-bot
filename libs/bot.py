@@ -274,7 +274,8 @@ class App:
 						if message.reply_to_message:
 							self.bot.reply_to(
 								message.reply_to_message,
-								text
+								text,
+								parse_mode = "MarkDown"
 							)
 					except ApiTelegramException:
 						pass
