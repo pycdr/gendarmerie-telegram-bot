@@ -22,6 +22,7 @@ gendarmerie (taken from the series "Barare Nights") can manage your telegram gro
    $ pip install -r requirements.txt
    ```
 
+<<<<<<< HEAD
 3. edit `config.json` file (just set the token for now), else you'll give token and other things as argument to program:
 
    ```bash
@@ -91,10 +92,77 @@ $ ./main.py <token> -a @admin1 @admins2 ...
    ```
 
 5. then, run:
+||||||| merged common ancestors
+3. edit `config.json` file (just set the token for now), else you'll give token and other things as argument to program:
+
+   ```bash
+   {
+   	"token": "<put your bot token here>",
+   	"users":{
+   		"admins": []
+   	}
+   }
+   ```
+
+you can also do this (if `config.json`) doesn't exists:
+
+```bash
+$ ./main.py <token> -a @admin1 @admins2 ...
+```
+
+4. put your texts for each commands in `texts.json` file. this is its template data:
+
+   ```json
+	{
+		"private": {
+			"command":{
+				"start": "<private/command/start>",
+				"about": "<private/command/about>",
+				"help": "<private/command/help>",
+				"paste": "<private/command/paste>",
+				"ask": "<private/command/ask>",
+				"project": "<private/command/project>",
+				"irrelevant": "<private/command/irrelevant>",
+				"learning": "<private/command/learning>",
+				"telegram_bot": "<private/command/telegram_bot>"
+			}
+		},
+		"group": {
+			"command":{
+				"start": "<group/command/start>",
+				"about": "<group/command/about>",
+				"help": "<group/command/help>",
+				"paste": "<group/command/paste>",
+				"ask": "<group/command/ask>",
+				"project": {
+					"admin": "<group/command/project/admin>",
+					"user": "<group/command/project/user>"
+				},
+				"irrelevant": {
+					"admin": "<group/command/irrelevant/admin>",
+					"user": "<group/command/irrelevant/user>"
+				},
+				"learning": {
+					"admin": "<group/command/learning/admin>",
+					"user": "<group/command/learning/user>"
+				},
+				"telegram_bot": {
+					"admin": "<group/command/telegram_bot/admin>",
+					"user": "<group/command/telegram_bot/user>"
+				}
+			}
+		}
+	}
+   ```
+
+5. then, run:
+=======
+3. then, run:
+>>>>>>> ver0.1
 
    ```bash
    $ chmod +x main.py
-   $ ./main.py
+   $ ./main.py <token>
    ```
 
 # Contributing
