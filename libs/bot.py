@@ -20,7 +20,8 @@ class App:
 		# 		3 = AddCmd-CmdAdminOnly,
 		# 		4 = AddCmd-Submitation,
 		# 		5 = DelCmd-GetGroupId,
-		# 		6 = DelCmd-GetCmdName
+		# 		6 = DelCmd-GetCmdName,
+		# 		7 = GetCmd-GetGroupId
 		# 	),
 		# 	(...)
 		# )
@@ -141,7 +142,7 @@ class App:
 					self.bot.reply_to(
 						message,
 						"your group: \n" + "\n".join(
-							f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: t.me/{self.info.username}?start={x[0]}"
+							f"➕\n {'@'+x[2][1:-1]+': ' if x[2] else ''}'{x[1]}':\nt.me/{self.info.username}?start={x[0]}"
 							for x in groups
 						) if len(groups) > 0 else "no group for you:("
 					)
@@ -160,7 +161,7 @@ class App:
 				).status in ("administrator", "creator"):
 					self.bot.reply_to(
 						message,
-						f"click there to add command: t.me/{self.info.username}?start={message.chat.id}"
+						f"please send this command in the private chat!"
 					)
 				else:
 					try:
@@ -191,7 +192,7 @@ class App:
 			self.bot.send_message(
 				message.chat.id,
 				"your group: \n" + "\n".join(
-					f"➕ {x[1]} {'('+x[2]+')' if x[2] else ''}: {x[0]}"
+					f"➕\n {'@'+x[2][1:-1]+': ' if x[2] else ''}'{x[1]}': {x[0]}"
 					for x in groups
 				)+"\nso, choose one of these group IDs:" if len(groups) > 0 else "no group for you:(",
 				reply_markup = markup if len(groups) > 0 else telebot.types.ReplyKeyboardRemove(selective=False)
@@ -230,6 +231,53 @@ class App:
 					message.chat.id,
 					"please send this command in your group!"
 				)
+		@self.bot.message_handler(commands = ['get'])
+		def get(message):
+			if message.chat.type in ("group", "supergroup"):
+				if self.bot.get_chat_member(
+					message.chat.id,
+					message.from_user.id
+				).status in ("administrator", "creator"):
+					self.bot.reply_to(
+						message,
+						f"please send this command in the private chat!"
+					)
+				else:
+					try:
+						self.bot.delete_message(
+							message.chat.id,
+							message.from_user.id
+						)
+					except ApiTelegramException:
+						pass
+			successful, res = self.mysql.get_groups()
+			if not successful:
+				self.bot.reply_to(
+					message,
+					"unsuccessful: "+res
+				)
+				return
+			groups = [
+				group
+				for group in res
+				if self.bot.get_chat_member(
+					group[0],
+					message.from_user.id
+				).status in ("administrator", "creator")
+			]
+			markup = telebot.types.ReplyKeyboardMarkup(row_width = 4 if len(groups) > 4 else len(groups))
+			for group in groups:
+				markup.add(str(group[0]))
+			self.bot.send_message(
+				message.chat.id,
+				"your group: \n" + "\n".join(
+					f"➕\n {'@'+x[2][1:-1]+': ' if x[2] else ''}'{x[1]}': {x[0]}"
+					for x in groups
+				)+"\nso, choose one of these group IDs:" if len(groups) > 0 else "no group for you:(",
+				reply_markup = markup if len(groups) > 0 else telebot.types.ReplyKeyboardRemove(selective=False)
+			)
+			if len(groups) > 0:
+				self.mode[message.from_user.id] = (7, ())
 
 		@self.bot.message_handler(content_types = ["text"])
 		def check_msg(message):
@@ -347,7 +395,7 @@ class App:
 				mode, ((group_id, group_name, group_username), commands_names, commands_text, delete_replied, admin_only) = self.mode[user_id]
 				self.bot.send_message(
 					message.chat.id,
-					f"option saved! so, this is the details of your command(s):▶️ group \"{group_name}\"{' @'+group_username if group_username else ''} (id: {group_id})\n▶️ command names:\n{chr(10).join(commands_names)}\n▶️ text:\n{commands_text}\n▶️ delete replied message: {['no', 'yes'][delete_replied]}\n▶️ only for administrators: {['no', 'yes'][admin_only]}\nso, are you sure to add it?",
+					f"option saved! so, this is the details of your command(s):▶️ group \"{group_name}\"{' @'+group_username if group_username else ''} (id: {group_id})\n▶️ command names:\n{chr(10).join(commands_names)}\n▶️ text:\n{commands_text}\n▶️ delete replied message: {['❌', '✅'][delete_replied]}\n▶️ only for administrators: {['❌', '✅'][admin_only]}\nso, are you sure to add it?",
 					reply_markup = markup
 				)
 
@@ -444,6 +492,34 @@ class App:
 					print("error catchen for data (", data, ") - error: ", err)
 				self.mode[user_id] = (-1, ())
 				del self.commands[group][command]
+			
+			elif mode == 7:
+				if not (message.text[0] == '-' and message.text[1:].isnumeric()):
+					self.bot.reply_to(
+						message,
+						"invalid group id! please choose from the keyboard:"
+					)
+					return
+				group = int(message.text)
+				successful, res = self.mysql.get_group_commands(group)
+				if successful:
+					self.bot.send_message(
+						chat_id,
+						f"here are the commands for your group with id {group}:\n" + "\n".join(
+							f"🔽 {res[0]}\n{res[1]}\n➕ delete replied message: {['❌', '✅'][res[2]]}\n➕ only for admins: {['❌', '✅'][res[3]]}"
+							for command in res
+						) if group else f"no command for your group:( make sure you added your group with command /add . then, click here to add: t.me/{self.info.username}?start={group}",
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+					)
+				else:
+					self.bot.send_message(
+						message.chat.id,
+						"unsuccessful:( i reported this to my creator, sorry for this!",
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+					)
+					print("error catchen for data (", data, ") - error: ", err)
+				self.mode[user_id] = (-1, ())
+				
 
 	def run(self):
 		self.bot.polling()

@@ -82,7 +82,18 @@ class MySQLHandler:
 		except Exception as err:
 			return False, repr(err)
 		return True, res
-
+	
+	def get_group_commands(self, group_id: int):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
+		try:
+			with self.connection.cursor() as cursor:
+				cursor.execute(f"SELECT * FROM commands WHERE group_id={group_id}")
+				res = cursor.fetchall()
+		except Exception as err:
+			return False, repr(err)
+		return True, res
 
 	def add_command(
 		self, group_id: int, command: str, text: str,
