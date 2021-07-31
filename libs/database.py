@@ -3,6 +3,7 @@ from mysql.connector.errors import IntegrityError
 
 class MySQLHandler:
 	def __init__(self, **kwargs):
+		self.database_info = kwargs
 		self.connection = connect(**kwargs)
 		with self.connection.cursor() as cursor:
 			cursor.execute("SHOW TABLES LIKE 'groups';")
@@ -30,6 +31,9 @@ class MySQLHandler:
 	def add_group(self, group_id: int, group_name: str, group_username: str = "NULL") -> (bool, str):
 		if group_username != "NULL":
 			group_username = repr(group_username)
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute(
@@ -42,6 +46,9 @@ class MySQLHandler:
 		return True, ''
 
 	def get_group(self, group_id: int):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute(f"SELECT * FROM groups WHERE group_id = {group_id}")
@@ -53,6 +60,9 @@ class MySQLHandler:
 		return True, res
 
 	def get_groups(self):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute("SELECT * FROM groups")
@@ -62,6 +72,9 @@ class MySQLHandler:
 		return True, res
 
 	def get_commands(self):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute("SELECT * FROM commands")
@@ -75,6 +88,9 @@ class MySQLHandler:
 		self, group_id: int, command: str, text: str,
 		 delete_replied: bool = False, admin_only: bool = True
 	) -> (bool, str):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute(
@@ -98,6 +114,9 @@ class MySQLHandler:
 		return True, ''
 
 	def remove_command(self, group_id: int, command: str) -> (bool, str):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		try:
 			with self.connection.cursor() as cursor:
 				cursor.execute(
@@ -110,6 +129,9 @@ class MySQLHandler:
 		return True, ''
 
 	def update_command(self, group_id: int, command: str, **updates) -> (bool, str):
+		if not self.connection.is_connected():
+			self.connection.close()
+			self.connection = connect(**self.database_info)
 		update_sql_code = ", ".join(
 			f"{key} = '{value}'"
 			for key, value in updates.items()
