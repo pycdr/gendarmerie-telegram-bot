@@ -150,7 +150,7 @@ class App:
 		@self.bot.message_handler(commands = ['cancel'])
 		def cancel(message):
 			self.mode[message.from_user.id] = (-1, ())
-			self.bot.send_message(message.chat.id, "process canceled", markup = telebot.types.ReplyKeyboardRemove(selective=False))
+			self.bot.send_message(message.chat.id, "process canceled", reply_markup = telebot.types.ReplyKeyboardRemove(selective=False))
 
 		@self.bot.message_handler(commands = ['del'])
 		def delete(message):
@@ -271,7 +271,7 @@ class App:
 			self.bot.send_message(
 				message.chat.id,
 				"your group: \n" + "\n".join(
-					f"➕\n {'@'+x[2][1:-1]+': ' if x[2] else ''}'{x[1]}': {x[0]}"
+					f"➕\n {'@'+x[2][1:-1]+': ' if x[2]!='NULL' else ''}'{x[1]}': {x[0]}"
 					for x in groups
 				)+"\nso, choose one of these group IDs:" if len(groups) > 0 else "no group for you:(",
 				reply_markup = markup if len(groups) > 0 else telebot.types.ReplyKeyboardRemove(selective=False)
@@ -492,7 +492,7 @@ class App:
 					print("error catchen for data (", data, ") - error: ", err)
 				self.mode[user_id] = (-1, ())
 				del self.commands[group][command]
-			
+
 			elif mode == 7:
 				if not (message.text[0] == '-' and message.text[1:].isnumeric()):
 					self.bot.reply_to(
@@ -505,11 +505,13 @@ class App:
 				if successful:
 					self.bot.send_message(
 						chat_id,
-						f"here are the commands for your group with id {group}:\n" + "\n".join(
-							f"🔽 {res[0]}\n{res[1]}\n➕ delete replied message: {['❌', '✅'][res[2]]}\n➕ only for admins: {['❌', '✅'][res[3]]}"
+						f"here are the commands for your group with id {group}:\n" + "\n\n".join(
+							f"🔽 {command[0]}\n{command[1]}\n➕ delete replied message: {['❌', '✅'][command[2]]}\n➕ only for admins: {['❌', '✅'][command[3]]}"
 							for command in res
 						) if group else f"no command for your group:( make sure you added your group with command /add . then, click here to add: t.me/{self.info.username}?start={group}",
-						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False)
+						reply_markup = telebot.types.ReplyKeyboardRemove(selective=False),
+						parse_mode = "MarkDown"
+
 					)
 				else:
 					self.bot.send_message(
@@ -519,7 +521,7 @@ class App:
 					)
 					print("error catchen for data (", data, ") - error: ", err)
 				self.mode[user_id] = (-1, ())
-				
+
 
 	def run(self):
 		self.bot.polling()
