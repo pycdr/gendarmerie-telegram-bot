@@ -12,13 +12,18 @@ def main() -> None:
 	)
 	parser.add_argument(
 		"token",
-		help = "token of your telegram bot",
-		type = str
+		help="token of your telegram bot",
+		type=str
 	)
 	parser.add_argument(
 		"--test-model",
 		help="test <Model> part",
 		action="store_true"
+	)
+	parser.add_argument(
+		"--webhook",
+		help="gets the webhook url",
+		type=str
 	)
 	args = parser.parse_args()
 	if args.test_model:
@@ -27,7 +32,8 @@ def main() -> None:
 	else:
 		from src import start_bot
 		start_bot(
-		    token = args.token
+		    token = args.token,
+			webhook = args.webhook
 		)
 
 if __name__ == "__main__":

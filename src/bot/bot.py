@@ -4,6 +4,7 @@ from telegram.ext import (
     Updater
 )
 from ..handler import get_handlers
+from urllib.parse import urljoin
 
 class Bot:
     def __init__(
@@ -33,6 +34,17 @@ class Bot:
         )
         logger = logging.getLogger(__name__)
     
+    def webhook(self, url):
+        self.updater.start_webhook(
+            listen="0.0.0.0",
+            port=5000,
+            url_path=self.token
+        )
+        self.updater.bot.setWebhook(
+            urljoin(url, self.token)
+        )
+        self.updater.idle()
+
     def start(self):
         self.updater.start_polling()
         self.updater.idle()

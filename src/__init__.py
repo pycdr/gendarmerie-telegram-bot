@@ -1,6 +1,7 @@
 def start_bot(
     token: str,
-    base_url: str = None
+    base_url: str = None,
+    webhook: str = None
 ):
     from .bot import Bot
     from . import model
@@ -9,7 +10,10 @@ def start_bot(
         base_url = base_url,
         model = model
     )
-    bot.start()
+    if webhook:
+        bot.webhook(webhook)
+    else:
+        bot.start()
 
 def start_model_test(
     token: str,
