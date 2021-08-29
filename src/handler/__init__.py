@@ -10,6 +10,9 @@ from .del_special import creator as create_del_special_handler
 from .del_group import creator as create_del_group_handler
 from .set_locks import creator as create_set_locks_handler
 from .start_command import creator as create_start_command
+from .backup import creator as create_backup
+from .watch import creator as create_watch
+from .export import creator as create_export
 
 CREATORES = (
     create_add_new_command,
@@ -23,7 +26,10 @@ CREATORES = (
     create_set_locks_handler,
     create_del_group_handler,
     create_status_messages_handler,
-    create_start_command
+    create_start_command,
+    create_backup,
+    create_watch,
+    create_export
 )
 
 def get_handlers(model, token):

@@ -30,9 +30,11 @@ YELLOW = chr(128993)
 DESCRIPTION = f"""🟢 /addgroup : send in your group, so i'll add it to my list, and i'll handle your group (with you, honey!)
 {GREEN} /addcommand : send in PV, so we'll add a new command to your group
 {GREEN} /addspecial : need a special command? so i'll suggest you some options with this command. just send in my PV!
+{GREEN} /export : export commands from a group to another one.
 
-{BLUE} /getcommand : send in PV, and i'll show you command. then, you'll select one and i'll show you it details
-{BLUE} /getspecial : link /getcommad , but for special commands
+{BLUE} /getcommand : just for admins! send in PV, and i'll show you command. then, you'll select one and i'll show you it details
+{BLUE} /getspecial : like /getcommad , but for special commands
+{BLUE} /watch : like /getcommand, but for all users in a group. 
 
 {RED} /delgroup : send in PV to remove your group from my list. really wanna do it?! :(
 {RED} /delcommand : send in PV, and i'll show your command to remove some of them
@@ -40,6 +42,7 @@ DESCRIPTION = f"""🟢 /addgroup : send in your group, so i'll add it to my list
 
 {PURPLE} /locks : we'll lock somethings (like forward messages), just send in PV
 
+{YELLOW} /cancel : cancel any process and any command, whenever you wanna stop the task!
 {YELLOW} /start : ಠ_ಠ"""
 
 def handler(update: Update, context: CallbackContext, model, token: str) -> int:
