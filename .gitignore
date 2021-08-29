@@ -1,5 +1,4 @@
 __pycache__/
-*.json
 */__pycache__/
 *.db
 *.dia
