@@ -24,9 +24,9 @@ GET_GROUP_FROM, GET_COMMAND, GET_GROUP_TO = range(3)
 EMOJI_LIKE = chr(128077)
 EMOJI_DISLIKE = chr(128078)
 ASCII_ART = """\
-(\___________/)
-( ͡ ͡° ͜ ʖ ͡ ͡°)
- \╭☞          \╭☞"""
+(\____/)
+( 0 ͜ ʖ0)
+ \╭☞  \╭☞"""
 
 def is_admin(chat_id: int, user_id: int, token: str):
     return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR)
@@ -38,7 +38,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0400"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, update.message.from_user.id, token)
@@ -52,7 +52,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def state_get_group_from_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -63,11 +63,11 @@ def state_get_group_from_by_callback(update: Update, context: CallbackContext, m
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
+    context.user_data["0400group_id"] = group_id
     query.edit_message_text(
         f"OK! for group \"{model.Group.get(model.Group.id == group_id).name}\", select one of these commands to export:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(name, callback_data = command.names) for name in json.loads(command.names)]
+            [InlineKeyboardButton(name, callback_data="0400"+command.names) for name in json.loads(command.names)]
             for command in model.Group.get(model.Group.id == group_id).normal_commands
         ])
     )
@@ -78,23 +78,23 @@ def state_get_command_by_callback(update: Update, context: CallbackContext, mode
     command = next(iter(
         command
         for command in model.Group.get(
-            model.Group.id == context.user_data["group_id"]
+            model.Group.id == context.user_data["0400group_id"]
         ).normal_commands
-        if command.names == query.data
+        if command.names == query.data[4:]
     ), False)
     if not command:
         query.answer("command not found!")
         return GET_COMMAND
     query.answer()
-    context.user_data["command"] = command
+    context.user_data["0400command"] = command
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0400"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, query.from_user.id, token)\
-            and group.id != context.user_data["group_id"]
+            and group.id != context.user_data["0400group_id"]
     ])
     query.edit_message_text(
         f"OK! so, select one to export commands {command.names} there:",
@@ -105,7 +105,7 @@ def state_get_command_by_callback(update: Update, context: CallbackContext, mode
 def state_get_group_to_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -116,7 +116,7 @@ def state_get_group_to_by_callback(update: Update, context: CallbackContext, mod
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    command = context.user_data["command"]
+    command = context.user_data["0400command"]
     new_command = model.NormalCommand.create(
         group = model.Group.get(model.Group.id == group_id),
         names = command.names,
@@ -126,7 +126,7 @@ def state_get_group_to_by_callback(update: Update, context: CallbackContext, mod
     )
     new_command.save()
     name_group_from = model.Group.get(
-        model.Group.id == context.user_data["group_id"]
+        model.Group.id == context.user_data["0400group_id"]
     ).name
     name_group_to = model.Group.get(
         model.Group.id == group_id
@@ -151,6 +151,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -167,25 +168,24 @@ def creator(model, token):
             GET_GROUP_FROM: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_from_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0400-\d+$'
                 )
             ],
             GET_COMMAND: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_command_by_callback, model, token),
-                    pattern=r'.+'
+                    pattern=r'0400.+'
                 )
             ],
             GET_GROUP_TO: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_to_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0400-\d+$'
                 )
             ]
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return get_command_handler

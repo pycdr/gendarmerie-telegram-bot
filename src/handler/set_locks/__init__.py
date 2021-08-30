@@ -43,7 +43,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0500"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, update.message.from_user.id, token)
@@ -57,7 +57,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def state_get_group_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -68,16 +68,16 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
-    group = model.Group.get(model.Group.id == context.user_data["group_id"])
+    context.user_data["0500group_id"] = group_id
+    group = model.Group.get(model.Group.id == context.user_data["0500group_id"])
     query.edit_message_text(
         f"OK! for group \"{group.name}\", select one of these options to change it:",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton(f"lock forward: {bool_emoji(group.locks[0].forward)}", callback_data="forward")
+                InlineKeyboardButton(f"lock forward: {bool_emoji(group.locks[0].forward)}", callback_data="0500"+"forward")
             ],
             [
-                InlineKeyboardButton("back to the previous menu", callback_data="GET_BACK")
+                InlineKeyboardButton("back to the previous menu", callback_data="0500"+"GET_BACK")
             ]
         ])
     )
@@ -85,12 +85,12 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
 
 def state_get_prop_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
-    if query.data == "GET_BACK":
+    if query.data[4:] == "GET_BACK":
         query.answer()
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton(
                 text=group.name,
-                callback_data=str(group.id)
+                callback_data="0500"+str(group.id)
             )]
             for group in model.Group.select()
             if is_admin(group.id, update.message.from_user.id, token)
@@ -100,11 +100,11 @@ def state_get_prop_by_callback(update: Update, context: CallbackContext, model, 
             reply_markup=keyboard
         )
         return GET_GROUP
-    if query.data not in PROPS:
+    if query.data[4:] not in PROPS:
         query.answer("invalid prop!")
         return GET_PROP
-    prop = query.data
-    group = model.Group.get(model.Group.id == context.user_data["group_id"])
+    prop = query.data[4:]
+    group = model.Group.get(model.Group.id == context.user_data["0500group_id"])
     model.Locks.update(**{
         prop: not getattr(group.locks[0], prop)
     }).where(model.Locks.group == group).execute()
@@ -113,10 +113,10 @@ def state_get_prop_by_callback(update: Update, context: CallbackContext, model, 
         f"OK! for group \"{group.name}\", select one of these options to change it:",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton(f"lock forward: {bool_emoji(group.locks[0].forward)}", callback_data="forward")
+                InlineKeyboardButton(f"lock forward: {bool_emoji(group.locks[0].forward)}", callback_data="0500"+"forward")
             ],
             [
-                InlineKeyboardButton("back to the previous menu", callback_data="GET_BACK")
+                InlineKeyboardButton("back to the previous menu", callback_data="0500"+"GET_BACK")
             ]
         ])
     )
@@ -127,6 +127,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -143,19 +144,18 @@ def creator(model, token):
             GET_GROUP: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0500-\d+$'
                 )
             ],
             GET_PROP: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_prop_by_callback, model, token),
-                    pattern=r'.+'
+                    pattern=r'0500.+'
                 )
             ]
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return set_locks_handler

@@ -13,6 +13,7 @@ from .start_command import creator as create_start_command
 from .backup import creator as create_backup
 from .watch import creator as create_watch
 from .export import creator as create_export
+from .database import creator as create_database
 
 CREATORES = (
     create_add_new_command,
@@ -29,7 +30,8 @@ CREATORES = (
     create_start_command,
     create_backup,
     create_watch,
-    create_export
+    create_export,
+    create_database
 )
 
 def get_handlers(model, token):

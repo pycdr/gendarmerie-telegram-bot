@@ -30,15 +30,12 @@ def is_admin(chat_id: int, user_id: int, token: str):
 
 def start_process(update: Update, context: CallbackContext, model, token: str) -> int:
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
-        Bot(token).delete_message(
-            update.message.chat.id,
-            update.message.message_id
-        )
+        update.message.delete()
         return ConversationHandler.END
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0000"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, update.message.from_user.id, token)
@@ -52,7 +49,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def state_get_group_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -63,7 +60,7 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
+    context.user_data["0000group_id"] = group_id
     query.edit_message_text(
         "OK! now, send you command. just use normal characters."
         "also, each line you write is a command itself. like:\n"
@@ -76,10 +73,10 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
 
 def status_get_commands_by_message(update: Update, context: CallbackContext, model, token: str) -> int:
     commands = [*map(str.lower, update.message.text.split("\n"))]
-    context.user_data["commands"] = commands
+    context.user_data["0000commands"] = commands
     if any(
             command in json.loads(cmd.names) for cmd in model.Group.get(
-                model.Group.id == context.user_data["group_id"]
+                model.Group.id == context.user_data["0000group_id"]
             ).normal_commands
             for command in commands
         ):
@@ -96,7 +93,7 @@ def status_get_commands_by_message(update: Update, context: CallbackContext, mod
 
 def status_get_text_by_message(update: Update, context: CallbackContext) -> int:
     text = update.message.text
-    context.user_data["text"] = text
+    context.user_data["0000text"] = text
     update.message.reply_text(
         "OK, so tell me should i delete the message, which the command is replying it?\n"\
         "*don't worry! it won't work for normal users*",
@@ -113,7 +110,7 @@ def status_get_delete_replied(update: Update, context: CallbackContext):
             "Invalid message! please choose from the keyboard"
         )
         return DELETE_REPLIED
-    context.user_data["delete_replied"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
+    context.user_data["0000delete_replied"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
     update.message.reply_text(
         "OK! as the last question: is/are the command(s) just for admins or not?",
         reply_markup=ReplyKeyboardMarkup([
@@ -129,19 +126,19 @@ def status_get_admin_only(update: Update, context: CallbackContext, model, token
             "Invalid message! please choose from the keyboard"
         )
         return ADMIN_ONLY
-    context.user_data["admin_only"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
+    context.user_data["0000admin_only"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
     new_command = model.NormalCommand(
-        group = model.Group.get(model.Group.id == context.user_data["group_id"]),
-        names = json.dumps(context.user_data["commands"]),
-        text = context.user_data["text"],
-        delete_replied = bool(context.user_data["delete_replied"]),
-        admin_only = bool(context.user_data["admin_only"])
+        group = model.Group.get(model.Group.id == context.user_data["0000group_id"]),
+        names = json.dumps(context.user_data["0000commands"]),
+        text = context.user_data["0000text"],
+        delete_replied = bool(context.user_data["0000delete_replied"]),
+        admin_only = bool(context.user_data["0000admin_only"])
     )
     new_command.save()
     update.message.reply_text(
         f"done! your nromal command details:\n"
         f"group: {html.escape(new_command.group.name)}\n"
-        f"names: {html.escape(','.join(context.user_data['commands']))}\n"
+        f"names: {html.escape(','.join(context.user_data['0000commands']))}\n"
         f"text:\n"
         f"<code>{html.escape(new_command.text)}</code>\n"
         f"delete replied message: {[EMOJI_DISLIKE, EMOJI_LIKE][new_command.delete_replied]}\n"
@@ -157,6 +154,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -174,7 +172,7 @@ def creator(model, token):
             GET_GROUP: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0000-\d+$'
                 )
             ],
             GET_COMMANDS: [
@@ -204,7 +202,6 @@ def creator(model, token):
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return add_new_command_handler

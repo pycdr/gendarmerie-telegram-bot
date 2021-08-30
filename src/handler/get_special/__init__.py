@@ -39,7 +39,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0101"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, update.message.from_user.id, token)
@@ -53,7 +53,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def state_get_group_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -64,22 +64,22 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
+    context.user_data["0101group_id"] = group_id
     query.edit_message_text(
         f"OK! for group \"{model.Group.get(model.Group.id == group_id).name}\", select one of these special commands:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("googling mode", callback_data="0")],
-            [InlineKeyboardButton("dictionary mode", callback_data="1")],
-            [InlineKeyboardButton("back to the previous menu", callback_data='GET_BACK')]
+            [InlineKeyboardButton("googling mode", callback_data="0101"+"0")],
+            [InlineKeyboardButton("dictionary mode", callback_data="0101"+"1")],
+            [InlineKeyboardButton("back to the previous menu", callback_data="0101"+'GET_BACK')]
             ])
         )
     return GET_TYPE
 
 def state_get_type_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
-    if query.data != "GET_BACK":
+    if query.data[4:] != "GET_BACK":
         try:
-            type_id = int(query.data)
+            type_id = int(query.data[4:])
         except ValueError:
             query.answer("invalid type id!")
             return ConversationHandler.END
@@ -87,25 +87,25 @@ def state_get_type_by_callback(update: Update, context: CallbackContext, model, 
             query.answer("the type id is not found!")
             return ConversationHandler.END
         query.answer()
-        context.user_data["type_id"] = type_id
+        context.user_data["0101type_id"] = type_id
         type_as_str = ['googling type', 'dictionary type'][type_id]
         query.edit_message_text(
             f"OK! for {type_as_str}, choose one of this regexes:",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton(command.regex, callback_data=command.regex)]
+                [InlineKeyboardButton(command.regex, callback_data="0101"+command.regex)]
                 for command in model.Group.get(
-                    model.Group.id == context.user_data["group_id"]
+                    model.Group.id == context.user_data["0101group_id"]
                 ).special_commands.select().where(
                     model.SpecialCommand.type_id == type_id
                 )
-            ] + [[InlineKeyboardButton("get back to the previous menu", callback_data="GET_BACK")]])
+            ] + [[InlineKeyboardButton("get back to the previous menu", callback_data="0101"+"GET_BACK")]])
         )
         return GET_REGEX
     else:
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton(
                 text=group.name,
-                callback_data=str(group.id)
+                callback_data="0101"+str(group.id)
             )]
             for group in model.Group.select()
             if is_admin(group.id, (update.message or update.callback_query).from_user.id, token)
@@ -118,10 +118,10 @@ def state_get_type_by_callback(update: Update, context: CallbackContext, model, 
 
 def state_get_regex_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
-    type_id = context.user_data["type_id"]
-    if query.data != "GET_BACK":
-        regex = query.data
-        group_id = context.user_data["group_id"]
+    type_id = context.user_data["0101type_id"]
+    if query.data[4:] != "GET_BACK":
+        regex = query.data[4:]
+        group_id = context.user_data["0101group_id"]
         command = next((command for command in model.SpecialCommand.select().where(
             model.SpecialCommand.type_id == type_id
         ) if command.group.id == group_id and command.regex == regex), False)
@@ -142,17 +142,17 @@ def state_get_regex_by_callback(update: Update, context: CallbackContext, model,
             f"+ delete replied message: {[EMOJI_DISLIKE, EMOJI_LIKE][delete_replied]}\n"
             f"+ admin only: {[EMOJI_DISLIKE, EMOJI_LIKE][admin_only]}",
             parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back to the commands", callback_data='GET_BACK')]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back to the commands", callback_data="0101"+'GET_BACK')]])
         )
         return GET_BACK
     else:
         query.answer()
         query.edit_message_text(
-            f"OK! for group \"{model.Group.get(model.Group.id == context.user_data['group_id']).name}\", select one of these special commands:",
+            f"OK! for group \"{model.Group.get(model.Group.id == context.user_data['0101group_id']).name}\", select one of these special commands:",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("googling mode", callback_data="0")],
-                [InlineKeyboardButton("dictionary mode", callback_data="1")],
-                [InlineKeyboardButton("back to the previous menu", callback_data='GET_BACK')]
+                [InlineKeyboardButton("googling mode", callback_data="0101"+"0")],
+                [InlineKeyboardButton("dictionary mode", callback_data="0101"+"1")],
+                [InlineKeyboardButton("back to the previous menu", callback_data="0101"+'GET_BACK')]
                 ])
             )
         return GET_TYPE
@@ -160,13 +160,13 @@ def state_get_regex_by_callback(update: Update, context: CallbackContext, model,
 def state_get_back_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     query.answer()
-    group_id = context.user_data["group_id"]
+    group_id = context.user_data["0101group_id"]
     query.edit_message_text(
         f"OK! for group \"{model.Group.get(model.Group.id == group_id).name}\", select one of these special commands:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("googling mode", callback_data="0")],
-            [InlineKeyboardButton("dictionary mode", callback_data="1")],
-            [InlineKeyboardButton("back to the previous menu", callback_data='GET_BACK')]
+            [InlineKeyboardButton("googling mode", callback_data="0101"+"0")],
+            [InlineKeyboardButton("dictionary mode", callback_data="0101"+"1")],
+            [InlineKeyboardButton("back to the previous menu", callback_data="0101"+'GET_BACK')]
             ])
         )
     return GET_TYPE
@@ -176,6 +176,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -192,31 +193,30 @@ def creator(model, token):
             GET_GROUP: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0101-\d+$'
                 )
             ],
             GET_TYPE: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_type_by_callback, model, token),
-                    pattern=r'.+'
+                    pattern=r'0101.+'
                 )
             ],
             GET_REGEX: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_regex_by_callback, model, token),
-                    pattern=r".+"
+                    pattern=r"0101.+"
                 )
             ],
             GET_BACK: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_back_by_callback, model, token),
-                    pattern='GET_BACK'
+                    pattern='0101GET_BACK'
                 )
             ]
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return get_special_handler

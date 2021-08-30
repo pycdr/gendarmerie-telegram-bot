@@ -40,7 +40,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0002"+str(group.id)
         )]
         for group in model.Group.select()
         if is_admin(group.id, update.message.from_user.id, token)
@@ -54,7 +54,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def get_group_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -65,12 +65,12 @@ def get_group_by_callback(update: Update, context: CallbackContext, model, token
         query.answer("you are not admin!!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
+    context.user_data["0002group_id"] = group_id
     query.edit_message_text(
         "OK! now, select one of these options for your special command: ",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("googling mode (with bmbgk.ir)", callback_data=str(TYPE_GOOGLING))],
-            [InlineKeyboardButton("dictionary mode", callback_data=str(TYPE_DICT))]
+            [InlineKeyboardButton("googling mode (with bmbgk.ir)", callback_data="0002"+str(TYPE_GOOGLING))],
+            [InlineKeyboardButton("dictionary mode", callback_data="0002"+str(TYPE_DICT))]
         ])
     )
     return GET_TYPE
@@ -78,7 +78,7 @@ def get_group_by_callback(update: Update, context: CallbackContext, model, token
 def get_type_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        type_id = int(query.data)
+        type_id = int(query.data[4:])
         if type_id not in range(2):
             query.answer("invalid type id!")
             return ConversationHandler.END
@@ -86,9 +86,9 @@ def get_type_by_callback(update: Update, context: CallbackContext, model, token:
         query.answer("invalid type id!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["type_id"] = type_id
+    context.user_data["0002type_id"] = type_id
     if type_id == TYPE_GOOGLING:
-        context.user_data["data"] = None
+        context.user_data["0002data"] = None
         query.edit_message_text(
             "Fine! so, tell me how is your regular expression for it? (the [first] group in your RE will be selected as URL query)",
             reply_markup=InlineKeyboardMarkup([])
@@ -102,7 +102,7 @@ def get_type_by_callback(update: Update, context: CallbackContext, model, token:
         return GET_DICTIONARY_REGEX
 
 def get_googling_regex_by_message(update: Update, context: CallbackContext, model, token: str) -> int:
-    context.user_data["regex"] = update.message.text
+    context.user_data["0002regex"] = update.message.text
     update.message.reply_text(
         "OK! so, tell me the message, which will be sent to the mentioned user\n"
         "use {googling_url} to put the generated URL.\n"\
@@ -111,7 +111,7 @@ def get_googling_regex_by_message(update: Update, context: CallbackContext, mode
     return GET_GOOGLING_TEXT
 
 def get_googling_text_by_message(update: Update, context: CallbackContext, model, token: str) -> int:
-    context.user_data["text"] = update.message.text
+    context.user_data["0002text"] = update.message.text
     update.message.reply_text(
         "OK, so tell me should i delete the message, which the command is replying it?\n"\
         "*don't worry! it won't work for normal users*",
@@ -122,7 +122,7 @@ def get_googling_text_by_message(update: Update, context: CallbackContext, model
     return DELETE_REPLIED
 
 def get_dict_regex_by_message(update: Update, context: CallbackContext, model, token: str) -> int:
-    context.user_data["regex"] = update.message.text
+    context.user_data["0002regex"] = update.message.text
     update.message.reply_text(
         "OK! so, tell me the message, which will be sent to the mentioned user\n"
         "use {dict_key} to put the key, and {dict_value} for value\n"\
@@ -131,7 +131,7 @@ def get_dict_regex_by_message(update: Update, context: CallbackContext, model, t
     return GET_DICTIONARY_TEXT
 
 def get_dict_text_by_message(update: Update, context: CallbackContext, model, token: str) -> int:
-    context.user_data["text"] = update.message.text
+    context.user_data["0002text"] = update.message.text
     update.message.reply_text(
         "OK! now, send me the dictionary data, like this:\n"
         "key1:value1\n"
@@ -150,7 +150,7 @@ def get_dict_data_by_message(update: Update, context: CallbackContext, model, to
             for items in res
         )
     }
-    context.user_data["data"] = json.dumps(res_dict)
+    context.user_data["0002data"] = json.dumps(res_dict)
     update.message.reply_text(
         "OK! i catched this data:\n"
         f"{chr(10).join(map(':'.join, res_dict.items()))}\n"
@@ -170,7 +170,7 @@ def status_get_delete_replied(update: Update, context: CallbackContext, model, t
             "Invalid message! please choose from the keyboard"
         )
         return DELETE_REPLIED
-    context.user_data["delete_replied"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
+    context.user_data["0002delete_replied"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
     update.message.reply_text(
         "OK! as the last question: is/are the command(s) just for admins or not?",
         reply_markup=ReplyKeyboardMarkup([
@@ -186,15 +186,15 @@ def status_get_admin_only(update: Update, context: CallbackContext, model, token
             "Invalid message! please choose from the keyboard"
         )
         return DELETE_REPLIED
-    context.user_data["admin_only"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
+    context.user_data["0002admin_only"] = [EMOJI_DISLIKE, EMOJI_LIKE].index(text)
     # add to model:
-    type_id = context.user_data["type_id"]
-    group_id = context.user_data["group_id"]
-    regex = context.user_data["regex"]
-    data = context.user_data["data"]
-    text = context.user_data["text"]
-    delete_replied = context.user_data["delete_replied"]
-    admin_only = context.user_data["admin_only"]
+    type_id = context.user_data["0002type_id"]
+    group_id = context.user_data["0002group_id"]
+    regex = context.user_data["0002regex"]
+    data = context.user_data["0002data"]
+    text = context.user_data["0002text"]
+    delete_replied = context.user_data["0002delete_replied"]
+    admin_only = context.user_data["0002admin_only"]
     new_special_command = model.SpecialCommand(
         type_id = type_id,
         group = model.Group.get(model.Group.id == group_id),
@@ -225,6 +225,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -242,13 +243,13 @@ def creator(model, token):
             GET_GROUP: [
                 CallbackQueryHandler(
                     pass_model_and_token(get_group_by_callback, model, token),
-                    pattern=r'^-\d+$'
+                    pattern=r'^0002-\d+$'
                 )
             ],
             GET_TYPE: [
                 CallbackQueryHandler(
                     pass_model_and_token(get_type_by_callback, model, token),
-                    pattern=r'^0|1$'
+                    pattern=r'^0002(0|1)$'
                 )
             ],
             GET_GOOGLING_REGEX: [
@@ -296,7 +297,6 @@ def creator(model, token):
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return add_special_command_handler

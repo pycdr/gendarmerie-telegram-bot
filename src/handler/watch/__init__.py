@@ -37,7 +37,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text=group.name,
-            callback_data=str(group.id)
+            callback_data="0102"+str(group.id)
         )]
         for group in model.Group.select()
         if is_joined(group.id, update.message.from_user.id, token)
@@ -51,7 +51,7 @@ def start_process(update: Update, context: CallbackContext, model, token: str) -
 def state_get_group_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     try:
-        group_id = int(query.data)
+        group_id = int(query.data[4:])
     except ValueError:
         query.answer("invalid group id!")
         return ConversationHandler.END
@@ -62,23 +62,23 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
         query.answer("you are kicked, restricted or left!")
         return ConversationHandler.END
     query.answer()
-    context.user_data["group_id"] = group_id
+    context.user_data["0102group_id"] = group_id
     query.edit_message_text(
         f"OK! for group \"{model.Group.get(model.Group.id == group_id).name}\", select one of these commands:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(name, callback_data = command.names) for name in json.loads(command.names)]
+            [InlineKeyboardButton(name, callback_data="0102"+command.names) for name in json.loads(command.names)]
             for command in model.Group.get(model.Group.id == group_id).normal_commands
             if not command.admin_only
-        ] + [[InlineKeyboardButton("back to the previous menu", callback_data='GET_BACK')]])
+        ] + [[InlineKeyboardButton("back to the previous menu", callback_data="0102"+'GET_BACK')]])
     )
     return GET_COMMAND
 
 def state_get_command_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
-    if query.data != "GET_BACK":
-        group_id = context.user_data["group_id"]
+    if query.data[4:] != "GET_BACK":
+        group_id = context.user_data["0102group_id"]
         command = next(command for command in model.NormalCommand.select().where(
-            model.NormalCommand.names == query.data
+            model.NormalCommand.names == query.data[4:]
         ) if command.group.id == group_id)
         query.answer()
         text = command.text
@@ -88,14 +88,14 @@ def state_get_command_by_callback(update: Update, context: CallbackContext, mode
             f"here are the details for commands {command.names} for group \"{command.group.name}\":\n"
             f"text: \n<code>{html.escape(text)}</code>\n",
             parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back to the commands", callback_data='GET_BACK')]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back to the commands", callback_data="0102"+'GET_BACK')]])
         )
         return GET_BACK
     else:
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton(
                 text=group.name,
-                callback_data=str(group.id)
+                callback_data="0102"+str(group.id)
             )]
             for group in model.Group.select()
             if is_joined(group.id, (update.message or update.callback_query).from_user.id, token)
@@ -109,14 +109,14 @@ def state_get_command_by_callback(update: Update, context: CallbackContext, mode
 def state_get_back_by_callback(update: Update, context: CallbackContext, model, token: str) -> int:
     query = update.callback_query
     query.answer()
-    group_id = context.user_data["group_id"]
+    group_id = context.user_data["0102group_id"]
     query.edit_message_text(
         f"OK! for group \"{model.Group.get(model.Group.id == group_id).name}\", select one of these commands:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(name, callback_data = command.names) for name in json.loads(command.names)]
+            [InlineKeyboardButton(name, callback_data="0102"+command.names) for name in json.loads(command.names)]
             for command in model.Group.get(model.Group.id == group_id).normal_commands
             if not command.admin_only
-        ] + [[InlineKeyboardButton("back to the previous menu", callback_data='GET_BACK')]])
+        ] + [[InlineKeyboardButton("back to the previous menu", callback_data="0102"+'GET_BACK')]])
     )
     return GET_COMMAND
 
@@ -125,6 +125,7 @@ def cancel_process(update: Update, context: CallbackContext):
     update.message.reply_text(
         "canceled."
     )
+    return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""
@@ -141,25 +142,24 @@ def creator(model, token):
             GET_GROUP: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_group_by_callback, model, token), 
-                    pattern=r'^-\d+$'
+                    pattern=r'^0102-\d+$'
                 )
             ],
             GET_COMMAND: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_command_by_callback, model, token),
-                    pattern=r'.+'
+                    pattern=r'0102.+'
                 )
             ],
             GET_BACK: [
                 CallbackQueryHandler(
                     pass_model_and_token(state_get_back_by_callback, model, token),
-                    pattern='GET_BACK'
+                    pattern='0102GET_BACK'
                 )
             ]
         },
         fallbacks=[
             CommandHandler("cancel", cancel_process)
-        ],
-        allow_reentry = True
+        ]
     )
     return get_command_handler
