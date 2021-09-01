@@ -20,6 +20,14 @@ class Locks(pw.Model):
     class Meta:
         database = groups_database
 
+class Filter(pw.Model):
+    group = pw.ForeignKeyField(Group, backref = "filters")
+    regex = pw.TextField()
+    type_id = pw.IntegerField() # 0: remove message - 1: restrict user - 2: ban user
+    restrict_until = pw.DateField()
+    class Meta:
+        database = groups_database
+
 # base class for normal and special commands
 # contains the <Meta> class
 class BaseCommandModel(pw.Model):
@@ -44,7 +52,7 @@ class SpecialCommand(BaseCommandModel):
     admin_only = pw.BooleanField()
 
 groups_database.connect()
-groups_database.create_tables([Group, Locks])
+groups_database.create_tables([Group, Locks, Filter])
 
 commands_database.connect()
 commands_database.create_tables([NormalCommand, SpecialCommand])
