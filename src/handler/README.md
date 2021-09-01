@@ -11,12 +11,15 @@ to solve callback queries conflicts, each query has a form like `<handler-code><
 | add_new_command     | 0000 |
 | add_new_group       | 0001 |
 | add_special_command | 0002 |
+| add_filter (BUG)    | 0003 |
 | get_command         | 0100 |
 | get_special         | 0101 |
 | watch               | 0102 |
+| get_filter          | 0103 |
 | del_command         | 0200 |
 | del_special         | 0201 |
 | del_group           | 0202 |
+| del_filter          | 0203 |
 | backup              | 0300 |
 | database            | 0301 |
 | export              | 0400 |

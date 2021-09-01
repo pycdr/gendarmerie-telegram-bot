@@ -14,6 +14,9 @@ from .backup import creator as create_backup
 from .watch import creator as create_watch
 from .export import creator as create_export
 from .database import creator as create_database
+from .add_filter import creator as create_add_filter_handler
+from .get_filter import creator as create_get_filter_handler
+from .del_filter import creator as create_del_filter_handler
 
 CREATORES = (
     create_add_new_command,
@@ -31,7 +34,10 @@ CREATORES = (
     create_backup,
     create_watch,
     create_export,
-    create_database
+    create_database,
+    # create_add_filter_handler, ---> BUG: MessageHandler at state <GET_REGEX> is not detected by PTB
+    # create_get_filter_handler,
+    # create_del_filter_handler, 
 )
 
 def get_handlers(model, token):

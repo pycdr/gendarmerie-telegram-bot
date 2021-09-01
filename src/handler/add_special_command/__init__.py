@@ -20,7 +20,6 @@ from telegram.ext import (
     Filters,
     conversationhandler
 )
-from telegram.keyboardbutton import KeyboardButton
 
 GET_GROUP, GET_TYPE, GET_GOOGLING_REGEX, GET_GOOGLING_TEXT, GET_DICTIONARY_REGEX, GET_DICTIONARY_DATA, GET_DICTIONARY_TEXT, DELETE_REPLIED, ADMIN_ONLY = range(9)
 TYPE_GOOGLING, TYPE_DICT = range(2)

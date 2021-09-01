@@ -27,18 +27,21 @@ BLUE = chr(128309)
 RED = chr(128308)
 PURPLE = chr(128995)
 YELLOW = chr(128993)
-DESCRIPTION = f"""🟢 /addgroup : send in your group, so i'll add it to my list, and i'll handle your group (with you, honey!)
+DESCRIPTION = f"""{GREEN} /addgroup : send in your group, so i'll add it to my list, and i'll handle your group (with you, honey!)
 {GREEN} /addcommand : send in PV, so we'll add a new command to your group
 {GREEN} /addspecial : need a special command? so i'll suggest you some options with this command. just send in my PV!
+{GREEN} /addfilter : add a new filter. send in PV.
 {GREEN} /export : export commands from a group to another one.
 
 {BLUE} /getcommand : just for admins! send in PV, and i'll show you command. then, you'll select one and i'll show you it details
 {BLUE} /getspecial : like /getcommad , but for special commands
+{BLUE} /getfilter : get the list of filters
 {BLUE} /watch : like /getcommand, but for all users in a group. 
 
 {RED} /delgroup : send in PV to remove your group from my list. really wanna do it?! :(
 {RED} /delcommand : send in PV, and i'll show your command to remove some of them
 {RED} /delspecial : like /delcommand , but ... you know the differences!
+{RED} /delfilter : remove a filter from a group.
 
 {PURPLE} /locks : we'll lock somethings (like forward messages), just send in PV
 
