@@ -27,7 +27,8 @@ def forward_lock(message: Message, delete):
 def handler(update: Update, context: CallbackContext, model, token: str):
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
         if not is_admin(update.message.chat.id, update.message.from_user.id, token):
-            forward_lock(
-                message = update.message,
-                delete = update.message.delete
-            )
+            if model.Group.get(model.Group.id == update.message.chat.id).locks[0].forward:
+                forward_lock(
+                    message = update.message,
+                    delete = update.message.delete
+                )
