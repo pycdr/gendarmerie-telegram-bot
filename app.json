@@ -1,0 +1,17 @@
+{
+    "name": "gendarmerie-telegram-bot",
+    "description": "gendarmerie (taken from the series \"Barare Nights\") can manage your telegram groups!",
+    "repository": "https://github.com/pycdr/gendarmerie-telegram-bot",
+    "env": {
+        "TOKEN": {
+            "description": "telegram bot token"
+        },
+        "WEBHOOK": {
+            "description": "webhook url",
+            "required": false
+        },
+        "ADMIN": {
+            "description": "bot admin ID"
+        }
+    }
+}
