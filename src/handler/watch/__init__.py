@@ -25,7 +25,7 @@ EMOJI_LIKE = chr(128077)
 EMOJI_DISLIKE = chr(128078)
 
 def is_joined(chat_id: int, user_id: int, token: str):
-    return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR or ChatMember.MEMBER)
+    return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR, ChatMember.MEMBER)
 
 def start_process(update: Update, context: CallbackContext, model, token: str) -> int:
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
