@@ -1,10 +1,12 @@
 import logging
-from re import M
 from telegram.ext import (
     Updater
 )
 from ..handler import get_handlers
 from urllib.parse import urljoin
+from threading import Thread
+from time import sleep
+from os.path import exists
 
 class Bot:
     def __init__(
@@ -46,5 +48,24 @@ class Bot:
         self.updater.idle()
 
     def start(self):
+        def check_db_files():
+            last_groups_db_content = b""
+            last_commands_db_content = b""
+            while 1:
+                sleep(5)
+                if not exists("groups.db"):
+                    with open("groups.db", 'wb') as groups_file:
+                        groups_file.write(last_groups_db_content)
+                    self.model.groups_database.init("groups.db")
+                else:
+                    last_groups_db_content = open("groups.db", 'rb').read()
+                if not exists("commands.db"):
+                    with open("commands.db", 'wb') as commands_file:
+                        commands_file.write(last_commands_db_content)
+                    self.model.commands_database.init("commands.db")
+                else:
+                    last_commands_db_content = open("commands.db", 'rb').read()
+        self.check_db_files_thread = Thread(target=check_db_files)
+        self.check_db_files_thread.start()
         self.updater.start_polling()
         self.updater.idle()

@@ -21,7 +21,7 @@ def is_admin(chat_id: int, user_id: int, token: str):
     return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR)
 
 def forward_lock(message: Message, delete):
-    if message.forward_from or message.forward_from_chat:
+    if message.forward_from or message.forward_from_chat or message.forward_from_message_id:
         delete()
 
 def handler(update: Update, context: CallbackContext, model, token: str):
