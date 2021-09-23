@@ -17,44 +17,11 @@ gendarmerie (taken from the series "Barare Nights") can manage your telegram gro
    pip install -r requirements.txt
    ```
 
-<<<<<<< HEAD
-3. run like this:
-||||||| merged common ancestors
-3. then, run:
-
-=======
 3. set `TOKEN` (bot token - required), `ADMIN` (bot admin telegram id - required) and `WEBHOOK` (webhook URL) in `.env`
 
 4. then, run:
 
->>>>>>> ver0.1
    ```bash
-<<<<<<< HEAD
-   $ python3 main.py 'token' 'host' 'user' 'database'
-||||||| merged common ancestors
-   $ chmod +x main.py
-   $ ./main.py <token>
-=======
    chmod +x main.py
    ./main.py
->>>>>>> ver0.1
    ```
-<<<<<<< HEAD
-   note that it will get the password (of your database) after it.
-
-# Contributing
-
-if you want to help us develop, you can read `CONTRIBUTING.md` file to see how you can help us. also you may want to see `CHANGELOG.md` file to understand changes.
-
-
-
-||||||| merged common ancestors
-
-# Contributing
-
-if you want to help us develop, you can read `CONTRIBUTING.md` file to see how you can help us. also you may want to see `CHANGELOG.md` file to understand changes.
-
-
-
-=======
->>>>>>> ver0.1
