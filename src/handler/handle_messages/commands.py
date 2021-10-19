@@ -38,7 +38,7 @@ def handler(update: Update, context: CallbackContext, model, token: str):
             admin_only = command.admin_only
             Bot(token).delete_message(update.message.chat.id, update.message.message_id)
             res = html.escape(text).format(
-                user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{update.message.reply_to_message.from_user.full_name}</a>"
+                user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{html.escape(update.message.reply_to_message.from_user.full_name)}</a>"
             )
             if is_admin(update.message.chat.id, update.message.from_user.id, token):
                 if delete_replied:
@@ -82,7 +82,7 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                         url = f"http://bmbgk.ir/?{urlencode({'q': search_text})}"
                         res = html.escape(text).format(
                             googling_url = url,
-                            user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{update.message.reply_to_message.from_user.full_name}</a>"
+                            user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{html.escape(update.message.reply_to_message.from_user.full_name)}</a>"
                         )
                 elif type_id == TYPE_DICT:
                     groups = re.match(regex, update.message.text).groups()
@@ -93,7 +93,7 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                         res = res = html.escape(text).format(
                             dict_key = dict_key,
                             dict_value = dict_value,
-                            user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{update.message.reply_to_message.from_user.full_name}</a>"
+                            user_mention = f"<a href=\"tg://user?id={update.message.reply_to_message.from_user.id}\">{html.escape(update.message.reply_to_message.from_user.full_name)}</a>"
                         )
                 Bot(token).delete_message(update.message.chat.id, update.message.message_id)
                 if is_admin(update.message.chat.id, update.message.from_user.id, token):
