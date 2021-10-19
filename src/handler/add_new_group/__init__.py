@@ -19,6 +19,8 @@ from telegram.ext import (
     Filters
 )
 
+import os
+
 def is_admin(chat_id: int, user_id: int, token: str):
     return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR)
 
@@ -38,7 +40,8 @@ def add_group(update: Update, context: CallbackContext, model, token):
             update.message.reply_text(
                 "your group is in my list! send to another one ツ"
             )
-        elif is_admin(update.message.chat.id, update.message.from_user.id, token):
+        # elif is_admin(update.message.chat.id, update.message.from_user.id, token):
+        elif int(os.getenv("ADMIN", "0")) == update.message.from_user.id:
             new_group = model.Group.create(
                 id = update.message.chat.id,
                 username = update.message.chat.username or "",
