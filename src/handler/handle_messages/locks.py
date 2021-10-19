@@ -32,3 +32,4 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                     message = update.message,
                     delete = update.message.delete
                 )
+                return True

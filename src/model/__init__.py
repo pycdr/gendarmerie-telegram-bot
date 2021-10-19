@@ -6,6 +6,7 @@ EMOJI_DISLIKE = chr(128078)
 
 groups_database = pw.SqliteDatabase("groups.db")
 commands_database = pw.SqliteDatabase("commands.db")
+users_database = pw.SqliteDatabase("users.db")
 
 class Group(pw.Model):
     name = pw.TextField()
@@ -50,6 +51,15 @@ class SpecialCommand(BaseCommandModel):
     text = pw.TextField()
     delete_replied = pw.BooleanField()
     admin_only = pw.BooleanField()
+
+class User(pw.Model):
+    id = pw.BigIntegerField()
+    group = pw.ForeignKeyField(Group, backref="users")
+    score = pw.BigIntegerField()
+    ban = pw.BooleanField()
+    banned_with_message = pw.TextField(null = True)
+    class Meta:
+        database = users_database
 
 groups_database.connect()
 groups_database.create_tables([Group, Locks, Filter])

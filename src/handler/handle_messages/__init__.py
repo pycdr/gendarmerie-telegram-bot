@@ -7,15 +7,18 @@ from telegram.ext import (
 
 from .locks import handler as locks_handler
 from .commands import handler as commands_handler
+from .score import score_handler
 
 HANDLERS = (
     locks_handler,
+    score_handler,
     commands_handler
 )
 
 def main_handle(update: Update, context: CallbackContext, model, token):
     for handler in HANDLERS:
-        handler(update, context, model, token)
+        if handler(update, context, model, token):
+            break
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""

@@ -24,6 +24,8 @@ def is_admin(chat_id: int, user_id: int, token: str):
     return Bot(token).get_chat_member(chat_id, user_id).status in (ChatMember.ADMINISTRATOR, ChatMember.CREATOR)
 
 def handler(update: Update, context: CallbackContext, model, token: str):
+    # True -> re-action is done - stop checking handlers
+    # None (no return) -> nothing is happed - go to the next handler
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
         command = next((
             command
@@ -61,6 +63,7 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                         res,
                         parse_mode = "HTML"
                     )
+            return True
         else:
             res = next(iter(
                 command
@@ -117,3 +120,4 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                             res,
                             parse_mode = "HTML"
                         )
+                return True
