@@ -7,7 +7,7 @@ from telegram.ext import (
 
 from .locks import handler as locks_handler
 from .commands import handler as commands_handler
-from .score import score_handler
+from .score import handler as score_handler
 
 HANDLERS = (
     locks_handler,
