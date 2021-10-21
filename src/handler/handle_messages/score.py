@@ -40,7 +40,7 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                     return
                 group = model.Group.get(model.Group.id == update.message.chat.id)
                 user = next(iter(
-                    user for user in group.user
+                    user for user in group.users
                     if user.id == update.message.from_user.id
                 ), None)
                 if not user:
