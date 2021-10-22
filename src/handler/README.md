@@ -16,6 +16,7 @@ to solve callback queries conflicts, each query has a form like `<handler-code><
 | get_special         | 0101 |
 | watch               | 0102 |
 | get_filter          | 0103 |
+| get_score           | 0104 |
 | del_command         | 0200 |
 | del_special         | 0201 |
 | del_group           | 0202 |

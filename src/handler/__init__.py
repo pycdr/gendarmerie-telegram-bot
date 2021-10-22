@@ -17,6 +17,7 @@ from .database import creator as create_database
 from .add_filter import creator as create_add_filter_handler
 from .get_filter import creator as create_get_filter_handler
 from .del_filter import creator as create_del_filter_handler
+from .get_score import creator as create_get_score_handler
 
 CREATORES = (
     create_add_new_command,
@@ -35,6 +36,7 @@ CREATORES = (
     create_watch,
     create_export,
     create_database,
+    create_get_score_handler,
     # create_add_filter_handler, ---> BUG: MessageHandler at state <GET_REGEX> is not detected by PTB
     # create_get_filter_handler,
     # create_del_filter_handler, 

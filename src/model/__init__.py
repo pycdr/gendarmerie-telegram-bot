@@ -54,6 +54,7 @@ class SpecialCommand(BaseCommandModel):
 
 class User(pw.Model):
     id = pw.BigIntegerField()
+    name = pw.TextField()
     group = pw.ForeignKeyField(Group, backref="users")
     score = pw.BigIntegerField()
     ban = pw.BooleanField()
@@ -66,3 +67,6 @@ groups_database.create_tables([Group, Locks, Filter])
 
 commands_database.connect()
 commands_database.create_tables([NormalCommand, SpecialCommand])
+
+users_database.connect()
+users_database.create_tables([User])
