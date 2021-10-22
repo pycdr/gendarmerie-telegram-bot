@@ -26,7 +26,11 @@ def forward_lock(message: Message, delete):
 
 def handler(update: Update, context: CallbackContext, model, token: str):
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
-        if not is_admin(update.message.chat.id, update.message.from_user.id, token):
+        if not (
+            is_admin(update.message.chat.id, update.message.from_user.id, token) or \
+            update.message.from_user.id in (1087968824, 777000) # GroupAnonymousBot and Telegram :)
+        ):
+            print(update.message.from_user)
             if model.Group.get(model.Group.id == update.message.chat.id).locks[0].forward:
                 forward_lock(
                     message = update.message,
