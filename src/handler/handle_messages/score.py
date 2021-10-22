@@ -23,7 +23,7 @@ def is_admin(chat_id: int, user_id: int, token: str):
 
 def score_count(text: str) -> int:
     if all(x=="+" for x in text):
-        return len(text)
+        return min(len(text), 4)
     return 0
 
 def generate_text(score: int, name: str, result: int) -> str:
