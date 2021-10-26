@@ -105,7 +105,7 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
     query.answer()
     context.user_data["0104group_id"] = group_id
     group = model.Group.get(model.Group.id == context.user_data["0104group_id"])
-    top_users = sorted(group.users, key = lambda user:user.score)[-10:][::-1]
+    list_of_users = sorted(group.users, key = lambda user:user.score, reverse = True)
     query.edit_message_text(
         f"top 10 for group \"{group.name}\":",
         reply_markup=InlineKeyboardMarkup(
@@ -114,7 +114,22 @@ def state_get_group_by_callback(update: Update, context: CallbackContext, model,
                     InlineKeyboardButton(user.name, callback_data = "0104"+"PASS"),
                     InlineKeyboardButton(f"{user.score}", callback_data = "0104"+"PASS")
                 ]
-                for user in top_users
+                for user in list_of_users[:10]
+            ]+[
+                [
+                    InlineKeyboardButton("...", callback_data = "0104"+"PASS")
+                ]
+            ]+[
+                [
+                    InlineKeyboardButton(user.name, callback_data = "0104"+"PASS"),
+                    InlineKeyboardButton(f"{user.score}", callback_data = "0104"+"PASS")
+                ]
+                for user in list_of_users[-5:]
+            ]+[
+                [
+                    InlineKeyboardButton("You", callback_data = "0104"+"PASS"),
+                    InlineKeyboardButton(f"{next((user.score for user in list_of_users if user.id == query.from_user.id), 0)}", callback_data = "0104"+"PASS")
+                ]
             ]+[
                 [
                     InlineKeyboardButton("back to the previous menu", callback_data="0104"+"GET_BACK")
