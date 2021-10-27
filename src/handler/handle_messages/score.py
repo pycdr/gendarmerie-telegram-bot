@@ -55,6 +55,9 @@ def handler(update: Update, context: CallbackContext, model, token: str):
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
         if update.message.reply_to_message:
             if is_admin(update.message.chat.id, update.message.from_user.id, token):
+                score_value = score_count(update.message.text)
+                if not score_value:
+                    return
                 if is_admin(
                     update.message.reply_to_message.chat.id,
                     update.message.reply_to_message.from_user.id,
@@ -65,9 +68,6 @@ def handler(update: Update, context: CallbackContext, model, token: str):
                     token
                 ):
                     update.message.delete()
-                    return
-                score_value = score_count(update.message.text)
-                if not score_value:
                     return
                 group = model.Group.get(model.Group.id == update.message.chat.id)
                 user = next(iter(
