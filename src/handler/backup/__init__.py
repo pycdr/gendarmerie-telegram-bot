@@ -38,6 +38,8 @@ def backup(update: Update, context: CallbackContext, model, token):
             open("./groups.db", 'rb')
         ).reply_document(
             open("./commands.db", 'rb')
+        ).reply_document(
+            open("./users.db", 'rb')
         )
     else:
         update.message.reply_text("0`_´0")
