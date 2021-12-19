@@ -1,12 +1,13 @@
 import logging
-from telegram.ext import (
-    Updater
-)
-from ..handler import get_handlers
-from urllib.parse import urljoin
+from os.path import exists
 from threading import Thread
 from time import sleep
-from os.path import exists
+from urllib.parse import urljoin
+
+from telegram.ext import Updater
+
+from ..handler import get_handlers
+
 
 class Bot:
     def __init__(
@@ -23,19 +24,19 @@ class Bot:
         )
         self.token = token
         self.init()
-    
+
     def init(self):
         for handler in get_handlers(self.model, self.token):
             self.updater.dispatcher.add_handler(
                 handler
             )
-    
+
     def enable_log(self):
         logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-        )
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level=logging.INFO)
         logger = logging.getLogger(__name__)
-    
+
     def webhook(self, url):
         self.updater.start_webhook(
             listen="0.0.0.0",
@@ -51,7 +52,7 @@ class Bot:
         def check_db_files():
             last_groups_db_content = b""
             last_commands_db_content = b""
-            while 1:
+            while True:
                 sleep(5)
                 if not exists("groups.db"):
                     with open("groups.db", 'wb') as groups_file:
