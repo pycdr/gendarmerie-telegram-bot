@@ -18,12 +18,13 @@ from telegram.ext import (
     Filters
 )
 import string, random, html
+from captcha.image import ImageCaptcha
 from io import BytesIO
 
 VALID_CHARS = string.ascii_letters + string.digits
 
 def generate_captcha(code: str) -> BytesIO:
-    pass
+    return ImageCaptcha().generate(code)
 
 GET_CAPTCHA = range(1)
 
@@ -77,7 +78,6 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
     except ValueError:
         query.answer("invalid query!")
         return GET_CAPTCHA
-    print(context.user_data["captcha"][user_id]["result"])
     # if you are watching this code, i wanna take an exam!
     # Q: why the following <if> statement won't be executed at all? 
     # good luck!
