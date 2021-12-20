@@ -30,8 +30,8 @@ def handler(update: Update, context: CallbackContext, model, token: str):
             is_admin(update.message.chat.id, update.message.from_user.id, token) or \
             update.message.from_user.id in (1087968824, 777000) # GroupAnonymousBot and Telegram :)
         ):
-            print(update.message.from_user)
-            if model.Group.get(model.Group.id == update.message.chat.id).locks[0].forward:
+            group = model.Group.get(model.Group.id == update.message.chat.id)
+            if group.locks[0].forward:
                 forward_lock(
                     message = update.message,
                     delete = update.message.delete
