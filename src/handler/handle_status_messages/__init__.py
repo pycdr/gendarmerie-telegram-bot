@@ -23,7 +23,10 @@ from io import BytesIO
 VALID_CHARS = string.ascii_letters + string.digits
 
 def generate_captcha(code: str) -> BytesIO:
-    pass
+    image = ImageCaptcha(width=280, height=90)
+    data = image.generate(code, fromat='png')
+    captcha_image = data.getvalue()
+    return captcha_image
 
 GET_CAPTCHA = range(1)
 
