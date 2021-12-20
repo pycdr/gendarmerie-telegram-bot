@@ -32,16 +32,16 @@ def pass_model_and_token(function, model, token):
 
 def add_group(update: Update, context: CallbackContext, model, token):
     if update.message.chat.type in (Chat.GROUP, Chat.SUPERGROUP):
-        if next(iter(
-            model.Group.select().where(
-                model.Group.id == update.message.chat.id
+        if int(os.getenv("ADMIN", "0")) == update.message.from_user.id:
+            if next(iter(
+                model.Group.select().where(
+                    model.Group.id == update.message.chat.id
+                    )
+                ), False):
+                update.message.reply_text(
+                    "your group is in my list! send to another one ツ"
                 )
-            ), False):
-            update.message.reply_text(
-                "your group is in my list! send to another one ツ"
-            )
-        # elif is_admin(update.message.chat.id, update.message.from_user.id, token):
-        elif int(os.getenv("ADMIN", "0")) == update.message.from_user.id:
+                return
             new_group = model.Group.create(
                 id = update.message.chat.id,
                 username = update.message.chat.username or "",
