@@ -25,7 +25,7 @@ VALID_CHARS = string.ascii_letters + string.digits
 
 def generate_captcha(code: str) -> BytesIO:
     image = ImageCaptcha(width=280, height=90)
-    data = image.generate(code, fromat='png')
+    data = image.generate(code, format='png')
     captcha_image = data.getvalue()
     return captcha_image
 
