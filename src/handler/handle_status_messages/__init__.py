@@ -19,6 +19,7 @@ from telegram.ext import (
 )
 import string, random, html
 from io import BytesIO
+from captcha.image import ImageCaptcha
 
 VALID_CHARS = string.ascii_letters + string.digits
 
