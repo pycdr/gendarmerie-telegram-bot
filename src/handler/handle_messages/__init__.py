@@ -16,9 +16,6 @@ HANDLERS = (
 )
 
 def main_handle(update: Update, context: CallbackContext, model, token):
-    if update.message.from_user.id in context.user_data.get("captcha", {}):
-        update.message.delete()
-        return
     for handler in HANDLERS:
         if handler(update, context, model, token):
             break

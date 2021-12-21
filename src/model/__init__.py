@@ -4,6 +4,8 @@ import peewee as pw
 EMOJI_LIKE = chr(128077)
 EMOJI_DISLIKE = chr(128078)
 
+captcha = {}
+
 groups_database = pw.SqliteDatabase("groups.db")
 commands_database = pw.SqliteDatabase("commands.db")
 users_database = pw.SqliteDatabase("users.db")
