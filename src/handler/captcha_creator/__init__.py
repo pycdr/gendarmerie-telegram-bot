@@ -32,6 +32,7 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
     if update.message.left_chat_member:
         if (update.message.from_user.id, update.message.chat.id) in model.captcha:
             model.captcha[(update.message.from_user.id, update.message.chat.id)]["message"].delete()
+        return
     #chat_member = context.bot.get_chat_member(
     #    chat_id = update.message.chat.id,
     #    user_id = update.message.from_user.id
