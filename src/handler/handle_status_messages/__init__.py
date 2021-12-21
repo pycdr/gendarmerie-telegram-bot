@@ -28,6 +28,14 @@ def generate_captcha(code: str) -> BytesIO:
 
 GET_CAPTCHA = range(1)
 
+def auto_action(context: CallbackContext):
+    user_id = context.job.context.user_data["captcha_delete_queue"]["user_id"]
+    context.bot.ban_chat_member(                                chat_id = context.job.context.user_data["captcha_delete_queue"]["chat_id"],
+        user_id = user_id)
+    context.job.context.user_data["captcha"][user_id]["message"].delete()
+    del context.job.context.user_data["captcha"][user_id]
+    del context.job.context.user_data["captcha_delete_queue"]
+
 def start_captcha(update: Update, context: CallbackContext, model, token):
     update.message.delete()
     if update.message.left_chat_member:
@@ -60,14 +68,28 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
         reply_markup = InlineKeyboardMarkup(button_list),
         parse_mode = "HTML"
     )
+
     if not "captcha" in context.user_data:
         context.user_data["captcha"] = {}
+
+    #TODO: context.user_data is user exclusive; meaning that for every user, 
+    # a unique instanse of CallbackContext object will be created and
+    # referenced throughout their requests to the bot. therefore, 
+    # it is unnecessary to use [user_id] as an indice in the context.user_data
+    # object. This should be fixed for readability and simplisity improvement.
+
+    context.user_data["captcha_delete_queue"] = {
+            "chat_id": update.message.chat.id,
+            "user_id": update.message.from_user.id
+            } #Add parameters for simplisity and ease of access
+
     context.user_data["captcha"][update.message.from_user.id] = {
         "result": result,
         "message": new_message,
         "user_id": update.message.from_user.id,
         "locks": 3 # if it becomes zero, the user will be removed!
     }
+    context.user_data["captcha_job"] = context.job_queue.run_once(auto_action, 30, context=context) # Add a job so that it would get fired up in 30seconds
     return GET_CAPTCHA
 
 def confirm_captcha(update: Update, context: CallbackContext, model, token):
@@ -86,6 +108,7 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
         return GET_CAPTCHA
     if code == context.user_data["captcha"][user_id]["result"]:
         query.answer("Correct!")
+        context.user_data["captcha_job"].schedule_removal() # un-schedule auto ban job
         context.user_data["captcha"][user_id]["message"].delete()
         del context.user_data["captcha"][user_id]
         return ConversationHandler.END
@@ -102,6 +125,7 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
             )
             context.user_data["captcha"][user_id]["message"].delete()
             del context.user_data["captcha"][user_id]
+            del context.user_data["captcha_delete_queue"]
             return ConversationHandler.END
 
 def pass_model_and_token(function, model, token):
