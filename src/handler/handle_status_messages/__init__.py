@@ -89,7 +89,7 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
         "user_id": update.message.from_user.id,
         "locks": 3 # if it becomes zero, the user will be removed!
     }
-    context.user_data["captcha_job"] = context.job_queue.run_once(auto_action, 30, context=context) # Add a job so that it would get fired up in 30seconds
+    context.user_data["captcha_job"] = context.job_queue.run_once(auto_action, 900, context=context) # Add a job so that it would get fired up in 30seconds
     return GET_CAPTCHA
 
 def confirm_captcha(update: Update, context: CallbackContext, model, token):
