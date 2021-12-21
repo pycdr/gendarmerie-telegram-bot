@@ -37,7 +37,9 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
             chat_id = query.message.chat.id,
             user_id = user_id
         )
+        model.captcha[(user_id, query.message.chat.id)]["job"].schedule_removal()
         model.captcha[(user_id, query.message.chat.id)]["message"].delete()
+        del model.captcha[(user_id, query.message.chat.id)]
         return
     if code == "unlock":
         if context.bot.get_chat_member(
@@ -51,7 +53,9 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
             until_date = time.time()+10e10,
             permissions = model.captcha[(user_id, query.message.chat.id)]["permissions"]
         )
+        model.captcha[(user_id, query.message.chat.id)]["job"].schedule_removal()
         model.captcha[(user_id, query.message.chat.id)]["message"].delete()
+        del model.captcha[(user_id, query.message.chat.id)]
         return
     if user_id != query.from_user.id:
         query.answer("(ಠ_ಠ)")
@@ -65,6 +69,7 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
             until_date = time.time()+10e10,
             permissions = model.captcha[(user_id, query.message.chat.id)]["permissions"]
         )
+        model.captcha[(user_id, query.message.chat.id)]["job"].schedule_removal()
         model.captcha[(user_id, query.message.chat.id)]["message"].delete()
         del model.captcha[(user_id, query.message.chat.id)]
         return
@@ -79,10 +84,10 @@ def confirm_captcha(update: Update, context: CallbackContext, model, token):
                 chat_id = model.captcha[(user_id, query.message.chat.id)]["message"].chat.id,
                 user_id = user_id
             )
+            model.captcha[(user_id, query.message.chat.id)]["job"].schedule_removal()
             model.captcha[(user_id, query.message.chat.id)]["message"].delete()
             del model.captcha[(user_id, query.message.chat.id)]
             return 
-    
 
 def pass_model_and_token(function, model, token):
     """this function is used to pass <Model> object"""

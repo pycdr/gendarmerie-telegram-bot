@@ -27,26 +27,16 @@ VALID_CHARS = string.ascii_letters + string.digits
 def generate_captcha(code: str) -> BytesIO:
     return ImageCaptcha().generate(code)
 
+def auto_remove_function(message, user_id, chat_id, model):
+    message.delete()
+    del model.captcha[(user_id, chat_id)]
+
 def start_captcha(update: Update, context: CallbackContext, model, token):
     update.message.delete()
     if update.message.left_chat_member:
         if (update.message.from_user.id, update.message.chat.id) in model.captcha:
             model.captcha[(update.message.from_user.id, update.message.chat.id)]["message"].delete()
         return
-    #chat_member = context.bot.get_chat_member(
-    #    chat_id = update.message.chat.id,
-    #    user_id = update.message.from_user.id
-    #)
-    permissions = ChatPermissions(
-        can_send_messages = True, #chat_member.can_send_messages,
-        can_send_media_messages = True, #chat_member.can_send_media_messages,
-        can_send_polls = False, #chat_member.can_send_polls,
-        can_send_other_messages = False, #chat_member.can_send_other_messages,
-        can_add_web_page_previews = True, #chat_member.can_add_web_page_previews,
-        can_change_info = False, #chat_member.can_change_info,
-        can_invite_users = False, #chat_member.can_invite_users,
-        can_pin_messages = False, #chat_member.can_pin_messages
-    )
     context.bot.restrict_chat_member(
         chat_id = update.message.chat.id,
         user_id = update.message.from_user.id,
@@ -61,9 +51,9 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
     for i in range(5):
         while wrong_answers[i] in ("remove", "unlock"):
             wrong_answers[i] = "".join(random.sample(VALID_CHARS, 6))
-    text =  "hello " + \
+    text =  "سلام " + \
             f"<a href=\"tg://user?id={update.message.from_user.id}\">{html.escape(update.message.from_user.full_name)}</a>" + \
-            "! You have 15 minutes to answer the #captcha"
+            " شما ۱۵ دقیقه وقت دارید تا به #کپچا جواب بدهید!"
     button_list = [
         [
             InlineKeyboardButton(wrong_answers[0], callback_data = wrong_answers[0]+str(update.message.from_user.id)),
@@ -91,11 +81,25 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
         ),
         parse_mode = "HTML"
     )
+    permissions = context.bot.get_chat(
+        chat_id = update.message.chat.id
+    ).permissions
     model.captcha[(update.message.from_user.id, update.message.chat.id)] = {
         "result": result,
         "message": new_message,
         "user_id": update.message.from_user.id,
+        "chat_id": update.message.chat.id,
         "permissions": permissions,
+        "job": context.job_queue.run_once(
+            (lambda _: auto_remove_function(
+                message = new_message,
+                user_id = update.message.from_user.id,
+                chat_id = update.message.chat.id,
+                model = model
+            )),
+            900,
+            context = context
+        ),
         "locks": 3 # if it becomes zero, the user will be removed!
     }
 
