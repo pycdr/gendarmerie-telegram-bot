@@ -28,7 +28,7 @@ def pass_model_and_token(function, model, token):
 
 def creator(model, token):
     handle_added_group_commands_handler = MessageHandler(
-        ~Filters.command,
+        ~ (Filters.command | Filters.status_update.new_chat_members | Filters.status_update.left_chat_member),
         pass_model_and_token(main_handle, model=model, token=token)
     )
     return handle_added_group_commands_handler
