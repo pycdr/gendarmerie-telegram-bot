@@ -93,7 +93,7 @@ def state_get_prop_by_callback(update: Update, context: CallbackContext, model, 
                 callback_data="0500"+str(group.id)
             )]
             for group in model.Group.select()
-            if is_admin(group.id, update.message.from_user.id, token)
+            if is_admin(group.id, query.message.from_user.id, token)
         ])
         query.edit_message_text(
             "OK! choose one of your groups to set some locks (if there's any! :D)",
