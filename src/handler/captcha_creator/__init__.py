@@ -43,7 +43,7 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
         model.anti_spam_data[update.message.chat.id].append((update.message.from_user.id, time.time()))
         if len(model.anti_spam_data[update.message.chat.id]) < 10:
             t = time.time()
-            if t - model.anti_spam_data[-1][1] < 1:
+            if t - model.anti_spam_data[update.message.chat.id][-1][1] < 1:
                 model.anti_spam_data[update.message.chat.id].append((update.message.from_user.id, t))
             else:
                 model.anti_spam_data[update.message.chat.id] = model.anti_spam_data[update.message.chat.id][-1:]
