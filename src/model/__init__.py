@@ -6,6 +6,8 @@ EMOJI_DISLIKE = chr(128078)
 
 captcha = {}
 
+anti_spam_data = {}
+
 groups_database = pw.SqliteDatabase("groups.db")
 commands_database = pw.SqliteDatabase("commands.db")
 users_database = pw.SqliteDatabase("users.db")

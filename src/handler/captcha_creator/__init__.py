@@ -37,6 +37,25 @@ def start_captcha(update: Update, context: CallbackContext, model, token):
         if (update.message.from_user.id, update.message.chat.id) in model.captcha:
             model.captcha[(update.message.from_user.id, update.message.chat.id)]["message"].delete()
         return
+    if update.message.chat.id not in model.anti_spam_data:
+        model.anti_spam_data[update.message.chat.id] = [(update.message.from_user.id, time.time())]
+    else:
+        model.anti_spam_data[update.message.chat.id].append((update.message.from_user.id, time.time()))
+        if len(model.anti_spam_data[update.message.chat.id]) < 10:
+            t = time.time()
+            if t - model.anti_spam_data[-1][1] < 1:
+                model.anti_spam_data[update.message.chat.id].append((update.message.from_user.id, t))
+            else:
+                model.anti_spam_data[update.message.chat.id] = model.anti_spam_data[update.message.chat.id][-1:]
+        else:
+            d = model.anti_spam_data[update.message.chat.id][-1][1] - model.anti_spam_data[update.message.chat.id][0][1]
+            if d <= 9:
+                for user_id, _ in model.anti_spam_data[update.message.chat.id]:
+                    context.bot.ban_chat_member(chat_id = update.message.chat.id, user_id = user_id)
+                    model.captcha[(user_id, update.message.chat.id)]["message"].delete()
+                model.anti_spam_data[update.message.chat.id].clear()
+            else:
+                del model.anti_spam_data[update.message.chat.id][0]
     context.bot.restrict_chat_member(
         chat_id = update.message.chat.id,
         user_id = update.message.from_user.id,
